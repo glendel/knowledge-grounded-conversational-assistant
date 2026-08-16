@@ -1,0 +1,14 @@
+{
+  "name": "knowledge-grounded-conversational-assistant",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reusable white-label Core for knowledge-grounded conversational assistants.",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "check:boundary": "node ./tools/verify-core-boundary.js",
+    "check": "npm run check:boundary"
+  }
+}

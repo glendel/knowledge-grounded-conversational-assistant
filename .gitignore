@@ -1,0 +1,18 @@
+# Dependencies and generated output
+node_modules/
+coverage/
+.nyc_output/
+*.log
+*.tmp
+*.temp
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Deployment-owned material must live outside this Core checkout.
+app/
+deployments/
+runtime-data/
+tmp/
