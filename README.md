@@ -12,9 +12,9 @@ The Core exists to make assistants natural, fluent, useful, and grounded in appr
 
 ## Current phase
 
-Phase 1 established the clean repository boundary. Phase 2.2 added the portable kernel: safe filesystem primitives, stable identifiers and result envelopes, redaction, Core boundary security, linting, and neutral unit/security tests. Phase 2.3 adds the generic JSON Schema contract registry and strict validation suite.
+Phase 1 established the clean repository boundary. Phase 2.2 added the portable kernel: safe filesystem primitives, stable identifiers and result envelopes, redaction, Core boundary security, linting, and neutral unit/security tests. Phase 2.3 added the generic JSON Schema contract registry and strict validation suite. Phase 2.4 adds validated configuration loading and a prose-first AI capability boundary with generic provider adapters.
 
-Provider adapters, knowledge administration, and deployment-root support remain intentionally staged for later audited batches. This repository still cannot run a real assistant.
+The Core contains no active provider lane, model choice, credential, caller, or deployment root. Knowledge administration and deployment-root support remain intentionally staged for later audited batches. This repository still cannot run a real assistant.
 
 ## Repository rules
 
@@ -31,4 +31,4 @@ Provider adapters, knowledge administration, and deployment-root support remain 
 3. Validate that deployment against the Core contracts and acceptance gates.
 4. Promote an improvement to Core only when it is genuinely generic, sanitized, tested, and useful across deployments.
 
-See [the Core repository charter](docs/architecture/core-repository-charter.md), [the portable-kernel architecture](docs/architecture/phase-2-portable-kernel.md), and [the extraction checklist](docs/operations/extraction-checklist.md).
+See [the Core repository charter](docs/architecture/core-repository-charter.md), [the portable-kernel architecture](docs/architecture/phase-2-portable-kernel.md), [the AI capability foundation](docs/architecture/phase-2-4-ai-capability-foundation.md), and [the extraction checklist](docs/operations/extraction-checklist.md).
