@@ -12,7 +12,7 @@ The Core exists to make assistants natural, fluent, useful, and grounded in appr
 
 ## Current status
 
-Phase 2 is closed. It delivered the portable kernel, strict JSON contracts, explicit configuration validation, prose-first provider capability adapters, and governed Knowledge Base administration. The [Phase 2 closure certificate](docs/architecture/phase-2-closure-certificate.md) records the exact scope and limitations.
+Phase 3 is closed. It delivered the explicit deployment-root model and the first natural, prose-first conversation runtime under the [North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md). The [Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md) records the evidence, scope, and limitations. Durable memory, gateways, learning, tools, and channels remain later phases.
 
 The Core contains no active provider lane, model choice, credential, caller, or deployment-root resolver. Knowledge administration accepts an explicit, caller-supplied deployment root; it never discovers one from the Core checkout. Runtime retrieval and real conversation remain intentionally staged for later audited batches. This repository still cannot run a real assistant.
 
@@ -31,4 +31,4 @@ The Core contains no active provider lane, model choice, credential, caller, or 
 3. Validate that deployment against the Core contracts and acceptance gates.
 4. Promote an improvement to Core only when it is genuinely generic, sanitized, tested, and useful across deployments.
 
-See [the Core repository charter](docs/architecture/core-repository-charter.md), [the portable-kernel architecture](docs/architecture/phase-2-portable-kernel.md), [the AI capability foundation](docs/architecture/phase-2-4-ai-capability-foundation.md), [the Knowledge Base administration design](docs/architecture/phase-2-5-knowledge-administration.md), [the North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md), and [the extraction checklist](docs/operations/extraction-checklist.md).
+See [the Core repository charter](docs/architecture/core-repository-charter.md), [the portable-kernel architecture](docs/architecture/phase-2-portable-kernel.md), [the AI capability foundation](docs/architecture/phase-2-4-ai-capability-foundation.md), [the Knowledge Base administration design](docs/architecture/phase-2-5-knowledge-administration.md), [the Phase 3 runtime foundation](docs/architecture/phase-3-deployment-runtime-foundation.md), [the Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md), [the Phase 3 deployment guide](docs/operations/phase-3-deployment-runtime.md), [the North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md), and [the extraction checklist](docs/operations/extraction-checklist.md).

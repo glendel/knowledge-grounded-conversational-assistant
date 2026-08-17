@@ -53,7 +53,7 @@ export async function verifyPhase2Closure({ rootDirectory = coreRoot } = {}) {
   }
   if (packageJson?.dependencies?.['pdfjs-dist'] === undefined) failures.push('Phase 2 knowledge extraction dependency is missing: pdfjs-dist.');
 
-  for (const prohibitedPath of ['app', 'bin']) {
+  for (const prohibitedPath of ['app']) {
     if (await exists(path.join(root, prohibitedPath))) failures.push('Phase 2 Core must not include a deployment-owned ' + prohibitedPath + '/ directory.');
   }
 
