@@ -10,7 +10,7 @@ Its portability model is:
 one Core release + one deployment root = one independently governed assistant
 ```
 
-The Core must support multiple assistant purposes through deployment data and policies, including support, advisory, seller, onboarding, and internal knowledge assistance. No purpose, brand, company, product, catalog, policy, or assistant name may be hard-coded in Core source, tests, examples, or root documentation.
+The Core must support multiple assistant purposes through deployment data and policies, including support, advisory, seller, onboarding, and internal knowledge assistance. No purpose, brand, company, product, catalog, policy, or assistant name may be hard-coded in tracked Core source, tests, examples, or root documentation.
 
 ## North Star
 
@@ -20,7 +20,7 @@ Build assistants that have natural, fluent, useful, evidence-grounded conversati
 
 Core-owned content includes generic source code, provider adapters, contracts, schemas, validators, templates, tests, and generic documentation.
 
-Deployment-owned content includes identity, purpose, actual configuration, approved knowledge, raw sources, provider routes, evaluation cases, policies, callers, secrets, runtime state, transcripts, and logs. It must remain outside this checkout.
+Deployment-owned content includes identity, purpose, actual configuration, approved knowledge, raw sources, provider routes, evaluation cases, policies, callers, secrets, runtime state, transcripts, and logs. It may live in a separate external deployment root or in ignored local `app/`, `config/`, `.env`, and runtime-data paths of a self-hosted clone. It must never be tracked by this repository.
 
 ## Required checks
 
@@ -33,7 +33,7 @@ Run `npm run check` before staging changes. It runs the current boundary, custom
 - Never copy Git history from a deployment repository.
 - Use synthetic, neutral fixtures only.
 - Do not add a feature merely because one deployment needs it; first determine whether configuration, policy, or deployment knowledge solves it. Change Core source only for reusable capability improvements.
-- Keep deployment-root selection explicit and validated once the runtime is introduced.
+- Keep deployment-root selection explicit and validated once the runtime is introduced. Equal Core/deployment roots are valid only for the explicit self-hosted mode; nested roots remain forbidden.
 - Stop and correct the change if a boundary check fails or any deployment information appears in Core-tracked files.
 
 Read [README.md](README.md), then the architecture charter and extraction checklist before performing work.

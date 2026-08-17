@@ -14,7 +14,7 @@
 
 `src/knowledge/` contains the administration lifecycle only: source discovery, controlled extraction, redaction, drafting, review, explicit Human Administrator approval, approved-only indexing, and retrieval evaluation. It accepts an explicit deployment root, validated configuration, and loaded contracts. It must never discover a deployment from the Core checkout or expose raw sources or drafts to a runtime.
 
-`src/deployment/` creates the one immutable, explicit Deployment Descriptor that binds a separate deployment root to Core contracts and validated deployment configuration. It must reject overlap with the Core checkout and must be the only deployment-path source for future runtime modules.
+`src/deployment/` creates the one immutable, explicit Deployment Descriptor that binds an external deployment root or an explicit self-hosted clone root to Core contracts and validated deployment configuration. It must reject nested roots and must be the only deployment-path source for runtime modules.
 
 `src/conversation/` provides approved-only retrieval, bounded context assembly, actual-text language selection, and a single prose-generation conversation loop. It must not read raw knowledge, discover deployment roots, invoke a dialogue tree, or demand JSON from normal user-facing prose.
 

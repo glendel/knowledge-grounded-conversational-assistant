@@ -3,7 +3,7 @@
   "assistantId": "example-assistant",
   "displayName": "Example Assistant",
   "purpose": "support",
-  "supportedLanguages": ["en"],
+  "supportedLanguages": ["en", "es"],
   "tone": "natural_clear_polite",
   "identity": "You are a helpful assistant for the configured organization.",
   "scope": "Help only within the approved Knowledge Base and configured purpose.",

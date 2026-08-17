@@ -10,7 +10,9 @@ The selected deployment root must contain:
 - app, containing deployment-owned approved knowledge and evaluation material;
 - environment-provided secrets when an enabled provider lane needs them.
 
-The Core checkout must remain separate. Do not place a deployment app directory, live configuration, provider credentials, logs, transcript, or raw sources in this repository.
+The deployment may be external or self-hosted. In self-hosted mode, `app/`, local `config/*.json`, `.env`, and runtime data live in the clone but remain ignored and untracked. In external mode, all deployment material remains outside the Core checkout. Never track provider credentials, logs, transcripts, raw sources, approved knowledge, or other deployment data in this repository.
+
+See the [self-hosted deployment design](../architecture/phase-4-self-hosted-deployment-mode.md) for initialization and pull-safe update rules.
 
 ## Console probe
 

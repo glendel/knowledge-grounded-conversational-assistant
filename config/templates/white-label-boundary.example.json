@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "disallowedCoreTerms": ["replace-with-deployment-term"],
+  "disallowedCorePathFragments": ["deployment/private-sources"]
+}

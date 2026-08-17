@@ -12,7 +12,7 @@ const DEFAULT_CORE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.ur
 export async function createDeploymentDescriptor({ deploymentRoot, coreRoot = DEFAULT_CORE_ROOT } = {}) {
   const resolvedCoreRoot = await validateRoot(coreRoot, 'coreRoot', 'DEPLOYMENT_CORE_ROOT_INVALID');
   const resolvedDeploymentRoot = await validateRoot(deploymentRoot, 'deploymentRoot', 'DEPLOYMENT_ROOT_INVALID');
-  assertSeparateRoots(resolvedCoreRoot, resolvedDeploymentRoot);
+  const mode = deploymentMode(resolvedCoreRoot, resolvedDeploymentRoot);
 
   const configDirectory = await requireOwnedDirectory(resolvedDeploymentRoot, 'config', 'DEPLOYMENT_CONFIG_DIRECTORY_MISSING');
   const appDirectory = await requireOwnedDirectory(resolvedDeploymentRoot, 'app', 'DEPLOYMENT_APP_DIRECTORY_MISSING');
@@ -24,6 +24,7 @@ export async function createDeploymentDescriptor({ deploymentRoot, coreRoot = DE
   return Object.freeze({
     coreRoot: resolvedCoreRoot,
     deploymentRoot: resolvedDeploymentRoot,
+    mode,
     configuration,
     contracts,
     paths: Object.freeze(paths)
@@ -48,13 +49,15 @@ async function validateRoot(candidate, label, code) {
   return resolved;
 }
 
-function assertSeparateRoots(coreRoot, deploymentRoot) {
-  if (coreRoot === deploymentRoot || isWithin(coreRoot, deploymentRoot) || isWithin(deploymentRoot, coreRoot)) {
+function deploymentMode(coreRoot, deploymentRoot) {
+  if (coreRoot === deploymentRoot) return 'self_hosted';
+  if (isWithin(coreRoot, deploymentRoot) || isWithin(deploymentRoot, coreRoot)) {
     throw new FoundationError('The deployment root must be separate from the Core checkout.', {
       code: 'DEPLOYMENT_ROOT_OVERLAP',
       path: deploymentRoot
     });
   }
+  return 'external';
 }
 
 function isWithin(parent, candidate) {

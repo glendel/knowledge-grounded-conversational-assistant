@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "basePath": "/v1",
+  "dataDirectory": "app/data/gateway",
+  "maxRequestBytes": 32768,
+  "signatureMaxSkewSeconds": 300,
+  "nonceRetentionSeconds": 900,
+  "jobRetentionDays": 7,
+  "callbackRetentionDays": 7,
+  "sourceExpansionTokenTtlSeconds": 900,
+  "maxWorkerConcurrency": 2,
+  "maxCallbackResponseBytes": 4096,
+  "callbackTimeoutMs": 10000,
+  "callbackRetryDelaysSeconds": [5, 30, 120],
+  "technicalUnavailableMessages": {
+    "en": "The assistant is temporarily unavailable.",
+    "es": "El asistente no está disponible temporalmente."
+  }
+}

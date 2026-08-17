@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcesDirectory": "app/knowledge/sources",
+  "registryPath": "app/knowledge/registry.json",
+  "extractedDirectory": "app/knowledge/extracted",
+  "draftsDirectory": "app/knowledge/drafts",
+  "approvedDirectory": "app/knowledge/approved",
+  "indexesDirectory": "app/knowledge/indexes",
+  "evaluationsDirectory": "app/knowledge/evaluations",
+  "maxSourceFileBytes": 25000000,
+  "maxSourceDirectoryDepth": 4,
+  "maxSourceFiles": 1000,
+  "maxExtractionTextCharacters": 8000000,
+  "maxExtractionSegments": 25000,
+  "requireHumanApproval": true,
+  "allowSymlinks": false
+}

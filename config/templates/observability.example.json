@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "redactionEnabled": true,
+  "includeMessageContent": false,
+  "maxEventDetailsCharacters": 4096
+}

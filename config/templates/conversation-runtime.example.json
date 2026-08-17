@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "maxRecentTurns": 12,
+  "maxRecentTurnCharacters": 2000,
+  "maxEvidenceDocuments": 4,
+  "maxEvidenceCharacters": 8000,
+  "maxContextCharacters": 18000,
+  "maxResponseCharacters": 3000,
+  "temperature": 0.2
+}

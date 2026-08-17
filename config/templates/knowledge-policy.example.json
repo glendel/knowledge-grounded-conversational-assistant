@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "approvedOnly": true,
+  "rawSourceRuntimeAccess": false,
+  "sourceVisibility": "on_demand",
+  "supportHistoryMode": "admin_only"
+}

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "environment": "development",
+  "dataDirectory": "app/data",
+  "memoryRetentionDays": 7,
+  "maxMessageCharacters": 8000,
+  "logLevel": "info"
+}

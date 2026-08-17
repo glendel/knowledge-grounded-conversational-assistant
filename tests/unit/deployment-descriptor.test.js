@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -34,15 +34,27 @@ test('creates one immutable descriptor for an explicit separate deployment', asy
   }
 });
 
-test('does not infer a deployment root and rejects a Core overlap', async () => {
+test('does not infer a deployment root and rejects nested Core/deployment roots', async () => {
   await assert.rejects(
     () => createDeploymentDescriptor({ coreRoot: CORE_ROOT }),
     (error) => error instanceof FoundationError && error.code === 'DEPLOYMENT_ROOT_INVALID'
   );
-  await assert.rejects(
-    () => createDeploymentDescriptor({ coreRoot: CORE_ROOT, deploymentRoot: CORE_ROOT }),
-    (error) => error instanceof FoundationError && error.code === 'DEPLOYMENT_ROOT_OVERLAP'
-  );
+  const nestedDeployment = path.join(CORE_ROOT, 'app-template');
+  await assert.rejects(() => createDeploymentDescriptor({ coreRoot: CORE_ROOT, deploymentRoot: nestedDeployment }), (error) => error instanceof FoundationError && error.code === 'DEPLOYMENT_ROOT_OVERLAP');
+});
+
+test('supports an explicit self-hosted deployment rooted at the cloned Core', async () => {
+  const selfHostedRoot = await mkdtemp(path.join(os.tmpdir(), 'kgca-self-hosted-'));
+  try {
+    await cp(path.join(CORE_ROOT, 'context', 'contracts'), path.join(selfHostedRoot, 'context', 'contracts'), { recursive: true });
+    await writeSyntheticCoreConfiguration(path.join(selfHostedRoot, 'config'));
+    await mkdir(path.join(selfHostedRoot, 'app'), { recursive: true });
+    const descriptor = await createDeploymentDescriptor({ coreRoot: selfHostedRoot, deploymentRoot: selfHostedRoot });
+    assert.equal(descriptor.mode, 'self_hosted');
+    assert.equal(descriptor.coreRoot, descriptor.deploymentRoot);
+  } finally {
+    await rm(selfHostedRoot, { recursive: true, force: true });
+  }
 });
 
 test('requires a complete deployment-owned config and app root', async () => {

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "enabled": true,
+  "retentionDays": 7,
+  "maxRecentTurns": 12,
+  "maxRecentTurnCharacters": 2000,
+  "maxSummaryCharacters": 2400,
+  "maxChatFacts": 12,
+  "storage": "file",
+  "directory": "app/data/chat-memory"
+}

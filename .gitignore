@@ -11,8 +11,11 @@ coverage/
 .env.*
 !.env.example
 
-# Deployment-owned material must live outside this Core checkout.
+# Self-hosted deployment material is intentionally local and untracked.
 app/
+config/*
+!config/templates/
+!config/templates/**
 deployments/
 runtime-data/
 tmp/
