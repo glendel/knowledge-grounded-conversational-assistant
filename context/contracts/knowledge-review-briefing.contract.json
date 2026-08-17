@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/knowledge-review-briefing/v1",
+  "title": "Safe AI-led knowledge review briefing",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^briefing_[a-f0-9]{16,64}$" },
+    "aiAdministrator": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "sourceIds": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^source_[a-f0-9]{16,64}$" } },
+    "proposedDocumentIds": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^knowledge_[a-z0-9-]{3,80}$" } },
+    "findings": { "type": "array", "maxItems": 500, "items": { "type": "object", "additionalProperties": false, "properties": { "kind": { "enum": ["duplicate", "conflict", "privacy", "freshness", "gap", "unsupported"] }, "severity": { "enum": ["info", "warning", "blocker"] }, "message": { "type": "string", "minLength": 1, "maxLength": 1000 } }, "required": ["kind", "severity", "message"] } },
+    "approvalRequested": { "const": false }
+  },
+  "required": ["schemaVersion", "id", "aiAdministrator", "generatedAt", "sourceIds", "proposedDocumentIds", "findings", "approvalRequested"]
+}

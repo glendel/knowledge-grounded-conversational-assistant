@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/runtime-conversation-turn/v1",
+  "title": "Natural conversation runtime turn",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "turnId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "conversationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "language": { "type": "string", "minLength": 2, "maxLength": 16 },
+    "text": { "type": "string", "minLength": 1, "maxLength": 20000 },
+    "evidenceState": { "enum": ["evidence", "no_evidence"] },
+    "knowledgeVersion": { "type": ["string", "null"], "maxLength": 128 },
+    "sourcesAvailable": { "type": "boolean" },
+    "completedAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "turnId", "conversationId", "userId", "language", "text", "evidenceState", "knowledgeVersion", "sourcesAvailable", "completedAt"]
+}

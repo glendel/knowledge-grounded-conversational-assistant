@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/observability-config/v1",
+  "title": "Observability configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "redactionEnabled": { "const": true },
+    "includeMessageContent": { "const": false },
+    "maxEventDetailsCharacters": { "type": "integer", "minimum": 64, "maximum": 100000 }
+  },
+  "required": ["schemaVersion", "redactionEnabled", "includeMessageContent", "maxEventDetailsCharacters"]
+}

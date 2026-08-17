@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/active-chat-memory/v1",
+  "title": "Active-chat memory record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "conversationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "recentTurns": { "type": "array", "maxItems": 100 },
+    "summary": { "type": ["string", "null"], "maxLength": 8000 },
+    "chatFacts": { "type": "array", "maxItems": 50 },
+    "expiresAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "conversationId", "userId", "recentTurns", "expiresAt"]
+}

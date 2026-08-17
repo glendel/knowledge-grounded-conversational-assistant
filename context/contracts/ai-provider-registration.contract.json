@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/ai-provider-registration/v1",
+  "title": "AI provider registration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$" },
+    "kind": { "enum": ["openrouter", "ollama_cloud", "google_gemini", "deterministic"] },
+    "enabled": { "type": "boolean" },
+    "supportedCapabilities": { "type": "array", "minItems": 1, "items": { "const": "conversation_generation" }, "uniqueItems": true }
+  },
+  "required": ["schemaVersion", "id", "kind", "enabled", "supportedCapabilities"]
+}

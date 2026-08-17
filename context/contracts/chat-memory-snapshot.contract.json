@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/chat-memory-snapshot/v1",
+  "type": "object", "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 }, "assistantId": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$" }, "conversationId": { "type": "string", "minLength": 1, "maxLength": 128 }, "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "revision": { "type": "integer", "minimum": 1 },
+    "recentTurns": { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": { "schemaVersion": { "const": 1 }, "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{2,127}$" }, "role": { "enum": ["user", "assistant"] }, "text": { "type": "string", "minLength": 1, "maxLength": 20000 }, "createdAt": { "type": "string", "format": "date-time" } }, "required": ["schemaVersion", "id", "role", "text", "createdAt"] } },
+    "summary": { "anyOf": [{ "type": "null" }, { "type": "object", "additionalProperties": false, "properties": { "schemaVersion": { "const": 1 }, "text": { "type": "string", "minLength": 1, "maxLength": 20000 }, "throughRevision": { "type": "integer", "minimum": 1 }, "updatedAt": { "type": "string", "format": "date-time" } }, "required": ["schemaVersion", "text", "throughRevision", "updatedAt"] }] },
+    "chatFacts": { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": { "schemaVersion": { "const": 1 }, "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{2,127}$" }, "kind": { "enum": ["preferred_name"] }, "value": { "type": "string", "minLength": 1, "maxLength": 80 }, "sourceTurnId": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{2,127}$" }, "status": { "enum": ["active", "superseded"] }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" } }, "required": ["schemaVersion", "id", "kind", "value", "sourceTurnId", "status", "createdAt", "updatedAt"] } }, "knowledgeVersion": { "type": ["string", "null"], "maxLength": 200 },
+    "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }, "lastInteractionAt": { "type": "string", "format": "date-time" }, "expiresAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "assistantId", "conversationId", "userId", "revision", "recentTurns", "summary", "chatFacts", "knowledgeVersion", "createdAt", "updatedAt", "lastInteractionAt", "expiresAt"]
+}

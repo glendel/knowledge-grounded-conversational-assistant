@@ -9,10 +9,21 @@
   },
   "scripts": {
     "check:boundary": "node ./tools/verify-core-boundary.js",
-    "lint": "node ./tools/lint-core.js",
+    "lint:foundation": "node ./tools/lint-core.js",
+    "lint": "npm run lint:foundation && eslint . --max-warnings=0",
     "test:unit": "node --test tests/unit/*.test.js",
+    "test:contracts": "node --test tests/contracts/*.test.js",
     "test:security": "node --test tests/security/*.test.js",
-    "test": "npm run test:unit && npm run test:security",
+    "test": "npm run test:unit && npm run test:contracts && npm run test:security",
     "check": "npm run check:boundary && npm run lint && npm run test"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.1",
+    "globals": "^17.11.0"
   }
 }

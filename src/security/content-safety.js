@@ -1,8 +1,8 @@
 const PATTERNS = Object.freeze([
   ['email', /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi],
-  ['phone', /(?<!\d)(?:\+?\d[\d .()\-]{6,}\d)(?!\d)/g],
-  ['credential', /\b(?:sk|pk|AIza|ghp|glpat|xoxb)[A-Z0-9_\-]{8,}\b/gi],
-  ['authorization', /\bBearer\s+[A-Z0-9._\-]{8,}\b/gi],
+  ['phone', /(?<!\d)(?:\+?\d[\d .()-]{6,}\d)(?!\d)/g],
+  ['credential', /\b(?:sk|pk|AIza|ghp|glpat|xoxb)[A-Z0-9_-]{8,}\b/gi],
+  ['authorization', /\bBearer\s+[A-Z0-9._-]{8,}\b/gi],
   ['url_query_secret', /https?:\/\/[^\s?#]+\?[^\s#]*(?:token|key|secret|password|signature)=[^\s&#]+[^\s]*/gi],
   ['card_like_number', /(?<!\d)(?:\d[ -]?){13,19}(?!\d)/g]
 ]);

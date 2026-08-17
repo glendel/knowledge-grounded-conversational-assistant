@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/ai-capability-failure/v1",
+  "title": "AI capability technical failure",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "requestId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "capability": { "const": "conversation_generation" },
+    "laneId": { "type": ["string", "null"], "pattern": "^[a-z][a-z0-9-]{2,63}$" },
+    "code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,79}$" },
+    "category": { "enum": ["configuration", "authentication", "request_rejected", "timeout", "rate_limit", "unavailable", "invalid_response"] },
+    "retryable": { "type": "boolean" },
+    "safeMessage": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "attempt": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "occurredAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "requestId", "capability", "laneId", "code", "category", "retryable", "safeMessage", "attempt", "occurredAt"]
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/gateway-source-expansion/v1",
+  "title": "Gateway presentation-safe source expansion",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "type": "string", "pattern": "^gatewaysource_[a-f0-9]{64}$" }, "callerId": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$" }, "jobId": { "type": "string", "pattern": "^gatewayjob_[a-f0-9]{32}$" }, "turnId": { "type": "string", "minLength": 1, "maxLength": 128 }, "tokenHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "sources": { "type": "array", "minItems": 1, "maxItems": 20, "items": { "type": "object", "additionalProperties": false, "properties": { "title": { "type": "string", "minLength": 1, "maxLength": 300 }, "language": { "type": "string", "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$" }, "section": { "type": ["string", "null"], "maxLength": 500 }, "page": { "type": ["integer", "null"], "minimum": 1 }, "excerpt": { "type": "string", "minLength": 1, "maxLength": 2000 } }, "required": ["title", "language", "section", "page", "excerpt"] } }, "createdAt": { "type": "string", "format": "date-time" }, "expiresAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "id", "callerId", "jobId", "turnId", "tokenHash", "sources", "createdAt", "expiresAt"]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/knowledge-source/v1",
+  "title": "Registered immutable knowledge source",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^source_[a-f0-9]{16,64}$" },
+    "relativePath": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "fileType": { "enum": ["pdf", "json", "text", "markdown", "unsupported"] },
+    "sizeBytes": { "type": "integer", "minimum": 0, "maximum": 100000000 },
+    "sourceContentSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "authority": { "enum": ["authoritative", "supporting", "historical", "unclassified"] },
+    "storageClassification": { "enum": ["local_only", "safe_to_track", "protected_store"] },
+    "extractionStatus": { "enum": ["registered", "extracted", "unsupported", "failed"] },
+    "observedAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "id", "relativePath", "fileType", "sizeBytes", "sourceContentSha256", "authority", "storageClassification", "extractionStatus", "observedAt", "updatedAt"]
+}

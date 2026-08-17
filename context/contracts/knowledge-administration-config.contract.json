@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/knowledge-administration-config/v1",
+  "title": "Knowledge administration configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "sourcesDirectory": { "type": "string", "minLength": 1, "maxLength": 300, "pattern": "^(?![\\\\/])(?!(?:.*\\.\\.)).+$" },
+    "registryPath": { "type": "string", "minLength": 1, "maxLength": 300, "pattern": "^(?![\\\\/])(?!(?:.*\\.\\.)).+$" },
+    "extractedDirectory": { "type": "string", "minLength": 1, "maxLength": 300, "pattern": "^(?![\\\\/])(?!(?:.*\\.\\.)).+$" },
+    "draftsDirectory": { "type": "string", "minLength": 1, "maxLength": 300, "pattern": "^(?![\\\\/])(?!(?:.*\\.\\.)).+$" },
+    "approvedDirectory": { "type": "string", "minLength": 1, "maxLength": 300, "pattern": "^(?![\\\\/])(?!(?:.*\\.\\.)).+$" },
+    "indexesDirectory": { "type": "string", "minLength": 1, "maxLength": 300, "pattern": "^(?![\\\\/])(?!(?:.*\\.\\.)).+$" },
+    "evaluationsDirectory": { "type": "string", "minLength": 1, "maxLength": 300, "pattern": "^(?![\\\\/])(?!(?:.*\\.\\.)).+$" },
+    "maxSourceFileBytes": { "type": "integer", "minimum": 1024, "maximum": 100000000 },
+    "maxSourceDirectoryDepth": { "type": "integer", "minimum": 0, "maximum": 20 },
+    "maxSourceFiles": { "type": "integer", "minimum": 1, "maximum": 100000 },
+    "maxExtractionTextCharacters": { "type": "integer", "minimum": 1000, "maximum": 10000000 },
+    "maxExtractionSegments": { "type": "integer", "minimum": 1, "maximum": 100000 },
+    "requireHumanApproval": { "const": true },
+    "allowSymlinks": { "const": false }
+  },
+  "required": ["schemaVersion", "sourcesDirectory", "registryPath", "extractedDirectory", "draftsDirectory", "approvedDirectory", "indexesDirectory", "evaluationsDirectory", "maxSourceFileBytes", "maxSourceDirectoryDepth", "maxSourceFiles", "maxExtractionTextCharacters", "maxExtractionSegments", "requireHumanApproval", "allowSymlinks"]
+}

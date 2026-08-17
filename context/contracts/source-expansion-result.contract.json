@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/source-expansion-result/v1",
+  "title": "On-demand source expansion result",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "turnId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "sources": { "type": "array", "maxItems": 20, "items": { "type": "object", "additionalProperties": false, "properties": { "title": { "type": "string", "minLength": 1, "maxLength": 300 }, "section": { "type": ["string", "null"], "maxLength": 500 }, "page": { "type": ["integer", "null"], "minimum": 1 }, "excerpt": { "type": ["string", "null"], "maxLength": 2000 } }, "required": ["title", "section", "page", "excerpt"] } }
+  },
+  "required": ["schemaVersion", "turnId", "sources"]
+}

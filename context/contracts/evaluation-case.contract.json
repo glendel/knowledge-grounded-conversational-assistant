@@ -1,0 +1,79 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "https://knowledge-grounded-assistant.example/contracts/evaluation-case/v1",
+    "title":  "Evaluation case",
+    "type":  "object",
+    "additionalProperties":  false,
+    "properties":  {
+                       "schemaVersion":  {
+                                             "const":  1
+                                         },
+                       "id":  {
+                                  "type":  "string",
+                                  "minLength":  1,
+                                  "maxLength":  128
+                              },
+                       "language":  {
+                                        "type":  "string",
+                                        "pattern":  "^[a-z]{2,3}(-[A-Z]{2})?$"
+                                    },
+                       "category":  {
+                                        "enum":  [
+                                                     "supported",
+                                                     "ambiguous",
+                                                     "unsupported",
+                                                     "frustrated",
+                                                     "adversarial"
+                                                 ]
+                                    },
+                       "input":  {
+                                     "type":  "string",
+                                     "minLength":  1,
+                                     "maxLength":  10000
+                                 },
+                       "expectedOutcome":  {
+                                               "enum":  [
+                                                            "answer",
+                                                            "clarify",
+                                                            "handoff"
+                                                        ]
+                                           },
+                       "expectedKnowledgeIds":  {
+                                                    "type":  "array",
+                                                    "maxItems":  20,
+                                                    "uniqueItems":  true,
+                                                    "items":  {
+                                                                  "type":  "string",
+                                                                  "pattern":  "^knowledge_[a-z0-9-]{3,80}$"
+                                                              }
+                                                }
+                   },
+    "required":  [
+                     "schemaVersion",
+                     "id",
+                     "language",
+                     "category",
+                     "input",
+                     "expectedOutcome",
+                     "expectedKnowledgeIds"
+                 ],
+    "allOf":  [
+                  {
+                      "if":  {
+                                 "properties":  {
+                                                    "category":  {
+                                                                     "const":  "supported"
+                                                                 }
+                                                }
+                             },
+                      "then":  {
+                                   "properties":  {
+                                                      "expectedKnowledgeIds":  {
+                                                                                   "minItems":  1,
+                                                                                   "type":  "array"
+                                                                               }
+                                                  }
+                               }
+                  }
+              ]
+}

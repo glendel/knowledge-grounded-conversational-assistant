@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/model-qualification-record/v1",
+  "title": "Model qualification record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,127}$" },
+    "laneId": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$" },
+    "providerId": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$" },
+    "model": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "capability": { "const": "conversation_generation" },
+    "datasetVersion": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "status": { "enum": ["draft", "approved", "rejected", "expired"] },
+    "results": { "type": "object", "additionalProperties": false, "properties": { "spanish": { "type": "boolean" }, "english": { "type": "boolean" }, "prosePreserved": { "type": "boolean" }, "failureSafety": { "type": "boolean" } }, "required": ["spanish", "english", "prosePreserved", "failureSafety"] },
+    "reviewedBy": { "type": ["string", "null"], "minLength": 1, "maxLength": 128 },
+    "reviewedAt": { "type": ["string", "null"], "format": "date-time" },
+    "createdAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "id", "laneId", "providerId", "model", "capability", "datasetVersion", "status", "results", "reviewedBy", "reviewedAt", "createdAt"]
+}

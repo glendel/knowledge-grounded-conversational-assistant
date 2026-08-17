@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { lstat, mkdir, open, readFile, realpath, rename, readdir, unlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readFile, realpath, rename, readdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { FoundationError } from './foundation-error.js';

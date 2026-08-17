@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/prose-generation-result/v1",
+  "title": "Prose generation result",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "requestId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "laneId": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$" },
+    "providerId": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$" },
+    "model": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "text": { "type": "string", "minLength": 1, "maxLength": 100000 },
+    "finishReason": { "type": ["string", "null"], "minLength": 1, "maxLength": 80 },
+    "usage": { "type": ["object", "null"], "additionalProperties": false, "properties": { "inputTokens": { "type": ["integer", "null"], "minimum": 0 }, "outputTokens": { "type": ["integer", "null"], "minimum": 0 }, "totalTokens": { "type": ["integer", "null"], "minimum": 0 } }, "required": ["inputTokens", "outputTokens", "totalTokens"] },
+    "completedAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "requestId", "laneId", "providerId", "model", "text", "finishReason", "usage", "completedAt"]
+}

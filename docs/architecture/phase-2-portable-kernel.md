@@ -13,6 +13,7 @@ The portable-kernel batch establishes generic foundations that can be reused by 
 | Privacy | Detection and redaction of common sensitive data in text and observation payloads. |
 | Repository security | Required ignore rules, forbidden deployment-path detection, optional deployment-term/path scanning, credential-value heuristics, and Core symlink rejection. |
 | Quality | LF/UTF-8 and strict JSON linting, JavaScript syntax validation, portable unit tests, and security tests. |
+| Contracts | Strict versioned JSON Schema contracts, a generic contract registry, and synthetic contract conformance tests. |
 
 ## Boundaries
 
@@ -20,7 +21,6 @@ The following remain outside this batch:
 
 - deployment-root selection and validation;
 - actual deployment configuration and provider routes;
-- contracts and contract registry;
 - provider adapters and model qualification;
 - raw-source ingestion, approved-knowledge retrieval, and knowledge administration;
 - natural conversation runtime, memory, gateway, callbacks, and operational storage.
@@ -33,7 +33,7 @@ Those capabilities require the later contract/configuration batches and the expl
 npm run check
 ```
 
-At this phase the command runs Core boundary security, LF/UTF-8 and syntax linting, portable unit tests, and Core security tests. Future phases will extend it with contract, integration, and multi-deployment acceptance gates.
+At this phase the command runs Core boundary security, LF/UTF-8 and syntax linting, portable unit tests, strict contract conformance tests, and Core security tests. Future phases will extend it with integration and multi-deployment acceptance gates.
 
 ## Promotion rule
 

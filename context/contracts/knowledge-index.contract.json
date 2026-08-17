@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/knowledge-index/v1",
+  "title": "Approved-only Knowledge Base index manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "knowledgeVersion": { "type": "string", "pattern": "^knowledge-release_[a-f0-9]{16,64}$" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "approvedOnly": { "const": true },
+    "documentIds": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^knowledge_[a-z0-9-]{3,80}$" } },
+    "documentContentSha256": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } },
+    "sourceHashes": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+  },
+  "required": ["schemaVersion", "knowledgeVersion", "generatedAt", "approvedOnly", "documentIds", "documentContentSha256", "sourceHashes"]
+}

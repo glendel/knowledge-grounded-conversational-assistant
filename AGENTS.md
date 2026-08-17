@@ -24,7 +24,7 @@ Deployment-owned content includes identity, purpose, actual configuration, appro
 
 ## Required checks
 
-Run `npm run check` before staging changes. It runs the current boundary, lint, unit, and security checks. Contract, integration, and multi-deployment acceptance checks will be added in later audited batches.
+Run `npm run check` before staging changes. It runs the current boundary, custom file-integrity lint, ESLint, unit, contract, and security checks. Integration and multi-deployment acceptance checks will be added in later audited batches.
 
 ## Rules
 

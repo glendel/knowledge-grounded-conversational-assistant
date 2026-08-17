@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/runtime-conversation-context/v1",
+  "title": "Provider-safe runtime conversation context",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "conversationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "language": { "type": "string", "minLength": 2, "maxLength": 16 },
+    "evidenceState": { "enum": ["evidence", "no_evidence"] },
+    "knowledgeVersion": { "type": ["string", "null"], "maxLength": 128 },
+    "messages": { "type": "array", "minItems": 2, "maxItems": 200, "items": { "type": "object", "additionalProperties": false, "properties": { "role": { "enum": ["system", "user", "assistant"] }, "content": { "type": "string", "minLength": 1, "maxLength": 100000 } }, "required": ["role", "content"] } },
+    "evidence": { "type": "array", "maxItems": 20, "items": { "type": "object", "additionalProperties": false, "properties": { "documentId": { "type": "string", "pattern": "^knowledge_[a-z0-9-]{3,80}$" }, "title": { "type": "string", "minLength": 1, "maxLength": 300 } }, "required": ["documentId", "title"] } }
+  },
+  "required": ["schemaVersion", "conversationId", "userId", "language", "evidenceState", "knowledgeVersion", "messages", "evidence"]
+}

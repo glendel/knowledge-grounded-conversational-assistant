@@ -7,7 +7,7 @@ const REQUIRED_IGNORE_LINES = Object.freeze(['.env', '.env.*', '!.env.example', 
 const FORBIDDEN_ROOT_PATHS = Object.freeze(['.env', 'app', 'deployments', 'runtime-data', 'tmp']);
 const IGNORED_DIRECTORIES = new Set(['.git', 'node_modules']);
 const TEXT_FILE = /(?:^|\/)(?:\.[^/]+|[^/]+\.(?:js|json|md|txt|yml|yaml|example)|[^/.]+)$/i;
-const SECRET_VALUE_PATTERN = /(?:api[_-]?key|secret|token|password)\s*[:=]\s*["']?(?!\$\{|<|your_|replace_|change_me|example|placeholder)[a-z0-9_\-]{12,}/i;
+const SECRET_VALUE_PATTERN = /(?:api[_-]?key|secret|token|password)\s*[:=]\s*["']?(?!\$\{|<|your_|replace_|change_me|example|placeholder)[a-z0-9_-]{12,}/i;
 
 export async function findCoreBoundaryViolations({ coreRoot, disallowedTerms = [], disallowedPathFragments = [] } = {}) {
   assertCoreRoot(coreRoot);

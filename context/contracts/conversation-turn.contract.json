@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/conversation-turn/v1",
+  "title": "Conversation turn result",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "turnId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "conversationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "outcome": { "enum": ["answer", "clarify", "handoff"] },
+    "confidence": { "enum": ["high", "medium", "low"] },
+    "answerText": { "type": "string", "minLength": 1, "maxLength": 20000 },
+    "handoff": { "type": "object", "additionalProperties": false, "properties": { "required": { "type": "boolean" }, "reason": { "type": ["string", "null"], "maxLength": 160 }, "suggestedNextStep": { "type": ["string", "null"], "maxLength": 500 }, "priority": { "enum": ["normal", "important", "urgent"] } }, "required": ["required", "reason", "suggestedNextStep", "priority"] },
+    "sourcesAvailable": { "type": "boolean" },
+    "completedAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "turnId", "conversationId", "outcome", "confidence", "answerText", "handoff", "sourcesAvailable", "completedAt"]
+}

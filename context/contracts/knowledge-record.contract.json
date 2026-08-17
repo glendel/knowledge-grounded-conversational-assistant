@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/knowledge-record/v1",
+  "title": "Knowledge lifecycle record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "kind": { "enum": ["source", "extraction", "draft", "approved_document", "index_entry", "citation"] },
+    "status": { "enum": ["registered", "extracted", "draft", "needs_review", "approved", "rejected", "superseded"] },
+    "sourceId": { "type": ["string", "null"], "minLength": 1, "maxLength": 128 },
+    "sourceContentSha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "title": { "type": ["string", "null"], "minLength": 1, "maxLength": 300 },
+    "sourceDisplay": { "type": ["object", "null"], "additionalProperties": false, "properties": { "section": { "type": ["string", "null"], "maxLength": 500 }, "page": { "type": ["integer", "null"], "minimum": 1 }, "excerpt": { "type": ["string", "null"], "maxLength": 2000 } }, "required": ["section", "page", "excerpt"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "id", "kind", "status", "sourceId", "sourceContentSha256", "title", "sourceDisplay", "createdAt", "updatedAt"]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/conversation-runtime-config/v1",
+  "title": "Natural conversation runtime configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "maxRecentTurns": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "maxRecentTurnCharacters": { "type": "integer", "minimum": 100, "maximum": 20000 },
+    "maxEvidenceDocuments": { "type": "integer", "minimum": 1, "maximum": 20 },
+    "maxEvidenceCharacters": { "type": "integer", "minimum": 500, "maximum": 50000 },
+    "maxContextCharacters": { "type": "integer", "minimum": 1000, "maximum": 100000 },
+    "maxResponseCharacters": { "type": "integer", "minimum": 100, "maximum": 20000 },
+    "temperature": { "type": "number", "minimum": 0, "maximum": 2 }
+  },
+  "required": ["schemaVersion", "maxRecentTurns", "maxRecentTurnCharacters", "maxEvidenceDocuments", "maxEvidenceCharacters", "maxContextCharacters", "maxResponseCharacters", "temperature"]
+}

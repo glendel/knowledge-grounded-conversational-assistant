@@ -12,9 +12,9 @@ The Core exists to make assistants natural, fluent, useful, and grounded in appr
 
 ## Current phase
 
-Phase 1 established the clean repository boundary. Phase 2.2 now adds the portable kernel: safe filesystem primitives, stable identifiers and result envelopes, redaction, Core boundary security, linting, and neutral unit/security tests.
+Phase 1 established the clean repository boundary. Phase 2.2 added the portable kernel: safe filesystem primitives, stable identifiers and result envelopes, redaction, Core boundary security, linting, and neutral unit/security tests. Phase 2.3 adds the generic JSON Schema contract registry and strict validation suite.
 
-Runtime contracts, provider adapters, knowledge administration, and deployment-root support remain intentionally staged for later audited batches. This repository still cannot run a real assistant.
+Provider adapters, knowledge administration, and deployment-root support remain intentionally staged for later audited batches. This repository still cannot run a real assistant.
 
 ## Repository rules
 
@@ -22,7 +22,7 @@ Runtime contracts, provider adapters, knowledge administration, and deployment-r
 - Keep actual deployments outside this checkout.
 - Never commit `.env`, keys, tokens, callback secrets, real URLs, raw sources, approved knowledge, transcripts, logs, memory, or runtime records.
 - Use `app-template/` and `config/templates/` only as safe synthetic starting points.
-- Run `npm run check` before staging a Core change. It runs the boundary, lint, unit, and security checks available at the current phase.
+- Run `npm run check` before staging a Core change. It runs the boundary, custom file-integrity lint, ESLint, unit, contract, and security checks available at the current phase.
 
 ## Administrator workflow
 

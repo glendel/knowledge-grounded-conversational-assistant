@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/chat-memory-config/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 }, "enabled": { "type": "boolean" }, "retentionDays": { "type": "integer", "minimum": 1, "maximum": 3650 },
+    "maxRecentTurns": { "type": "integer", "minimum": 1, "maximum": 100 }, "maxRecentTurnCharacters": { "type": "integer", "minimum": 100, "maximum": 20000 },
+    "maxSummaryCharacters": { "type": "integer", "minimum": 0, "maximum": 20000 }, "maxChatFacts": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "storage": { "const": "file" }, "directory": { "type": "string", "minLength": 1, "maxLength": 300, "pattern": "^(?![\\\\/])(?!(?:.*\\.\\.)).+$" }
+  },
+  "required": ["schemaVersion", "enabled", "retentionDays", "maxRecentTurns", "maxRecentTurnCharacters", "maxSummaryCharacters", "maxChatFacts", "storage", "directory"]
+}

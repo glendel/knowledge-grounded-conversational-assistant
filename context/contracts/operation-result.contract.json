@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/operation-result/v1",
+  "title": "Safe operation result envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "status": { "enum": ["success", "failure"] },
+    "correlationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "data": { "type": ["object", "array", "string", "number", "boolean", "null"] },
+    "error": { "type": ["object", "null"], "additionalProperties": false, "properties": { "code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,79}$" }, "administratorMessage": { "type": "string", "minLength": 1, "maxLength": 500 } }, "required": ["code", "administratorMessage"] }
+  },
+  "required": ["schemaVersion", "status", "correlationId", "occurredAt", "data", "error"]
+}

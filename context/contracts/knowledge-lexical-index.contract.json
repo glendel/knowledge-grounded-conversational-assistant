@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/knowledge-lexical-index/v1",
+  "title": "Approved factual lexical retrieval index",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "knowledgeVersion": { "type": "string", "pattern": "^knowledge-release_[a-f0-9]{16,64}$" },
+    "terms": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": { "type": "string", "pattern": "^knowledge_[a-z0-9-]{3,80}$" }
+      }
+    }
+  },
+  "required": ["schemaVersion", "knowledgeVersion", "terms"]
+}

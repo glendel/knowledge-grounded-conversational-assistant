@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/conversation-message/v1",
+  "title": "Conversation message",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "role": { "enum": ["user", "assistant"] },
+    "type": { "const": "text" },
+    "text": { "type": "string", "minLength": 1, "maxLength": 100000 },
+    "language": { "type": ["string", "null"], "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$", "maxLength": 8 },
+    "timestamp": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "id", "role", "type", "text", "timestamp"]
+}

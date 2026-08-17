@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/chat-memory-turn/v1",
+  "type": "object", "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{2,127}$" },
+    "role": { "enum": ["user", "assistant"] }, "text": { "type": "string", "minLength": 1, "maxLength": 20000 }, "createdAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "id", "role", "text", "createdAt"]
+}

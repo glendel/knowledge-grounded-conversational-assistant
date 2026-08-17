@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/knowledge-approval/v1",
+  "title": "Human knowledge approval decision",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^approval_[a-f0-9]{16,64}$" },
+    "documentId": { "type": "string", "pattern": "^knowledge_[a-z0-9-]{3,80}$" },
+    "decision": { "enum": ["approved", "rejected"] },
+    "approvedBy": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "declaration": { "type": "string", "enum": ["HUMAN_APPROVAL_CONFIRMED"] },
+    "reviewChecklist": { "type": "object", "additionalProperties": false, "properties": { "provenance": { "const": true }, "privacy": { "const": true }, "freshness": { "const": true }, "authority": { "const": true }, "conflicts": { "const": true }, "evaluationImpact": { "const": true } }, "required": ["provenance", "privacy", "freshness", "authority", "conflicts", "evaluationImpact"] },
+    "decidedAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "id", "documentId", "decision", "approvedBy", "declaration", "reviewChecklist", "decidedAt"]
+}

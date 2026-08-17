@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowledge-grounded-assistant.example/contracts/improvement-item/v1",
+  "title": "Improvement queue item",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "kind": { "enum": ["knowledge_gap", "weak_retrieval", "user_correction", "repeated_question", "validation_failure", "handoff"] },
+    "status": { "enum": ["new", "reviewing", "resolved", "rejected"] },
+    "sanitizedSummary": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "createdAt": { "type": "string", "format": "date-time" }
+  },
+  "required": ["schemaVersion", "id", "kind", "status", "sanitizedSummary", "createdAt"]
+}
