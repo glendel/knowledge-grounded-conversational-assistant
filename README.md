@@ -10,11 +10,11 @@ versioned Core + validated deployment root = one assistant deployment
 
 The Core exists to make assistants natural, fluent, useful, and grounded in approved evidence. Deterministic code protects the conversation through validation, isolation, bounded context, safety, and observability; it does not replace model-led natural conversation with dialogue trees.
 
-## Current phase
+## Current status
 
-Phase 1 established the clean repository boundary. Phase 2.2 added the portable kernel: safe filesystem primitives, stable identifiers and result envelopes, redaction, Core boundary security, linting, and neutral unit/security tests. Phase 2.3 added the generic JSON Schema contract registry and strict validation suite. Phase 2.4 adds validated configuration loading and a prose-first AI capability boundary with generic provider adapters.
+Phase 2 is closed. It delivered the portable kernel, strict JSON contracts, explicit configuration validation, prose-first provider capability adapters, and governed Knowledge Base administration. The [Phase 2 closure certificate](docs/architecture/phase-2-closure-certificate.md) records the exact scope and limitations.
 
-The Core contains no active provider lane, model choice, credential, caller, or deployment root. Knowledge administration and deployment-root support remain intentionally staged for later audited batches. This repository still cannot run a real assistant.
+The Core contains no active provider lane, model choice, credential, caller, or deployment-root resolver. Knowledge administration accepts an explicit, caller-supplied deployment root; it never discovers one from the Core checkout. Runtime retrieval and real conversation remain intentionally staged for later audited batches. This repository still cannot run a real assistant.
 
 ## Repository rules
 
@@ -31,4 +31,4 @@ The Core contains no active provider lane, model choice, credential, caller, or 
 3. Validate that deployment against the Core contracts and acceptance gates.
 4. Promote an improvement to Core only when it is genuinely generic, sanitized, tested, and useful across deployments.
 
-See [the Core repository charter](docs/architecture/core-repository-charter.md), [the portable-kernel architecture](docs/architecture/phase-2-portable-kernel.md), [the AI capability foundation](docs/architecture/phase-2-4-ai-capability-foundation.md), and [the extraction checklist](docs/operations/extraction-checklist.md).
+See [the Core repository charter](docs/architecture/core-repository-charter.md), [the portable-kernel architecture](docs/architecture/phase-2-portable-kernel.md), [the AI capability foundation](docs/architecture/phase-2-4-ai-capability-foundation.md), [the Knowledge Base administration design](docs/architecture/phase-2-5-knowledge-administration.md), [the North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md), and [the extraction checklist](docs/operations/extraction-checklist.md).
