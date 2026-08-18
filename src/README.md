@@ -6,7 +6,7 @@
 
 `src/observability/` contains generic redaction and structured observation helpers. It must never write a deployment transcript by itself.
 
-`src/contracts/` contains the generic strict JSON Schema registry. It validates Core-defined machine boundaries but must not load deployment configuration or runtime data by itself.
+`src/contracts/` contains the generic strict JSON Schema registry. It validates Core-defined machine boundaries but must not load deployment configuration, durable deployment data, or temporary scratch data by itself.
 
 `src/config/` validates a configuration directory explicitly supplied by a caller. It does not discover a configuration directory from the Core checkout.
 

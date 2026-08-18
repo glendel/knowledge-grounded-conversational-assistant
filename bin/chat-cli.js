@@ -18,16 +18,15 @@ export function parseChatCliArguments(argumentsList) {
     values[key] = value;
     index += 1;
   }
-  for (const key of ['deployment-root', 'runtime-data-dir', 'conversation-id', 'user-id']) {
+  for (const key of ['deployment-root', 'conversation-id', 'user-id']) {
     if (!values[key]) throw new Error('--' + key + ' is required.');
   }
-  if (!path.isAbsolute(values['deployment-root']) || !path.isAbsolute(values['runtime-data-dir'])) {
-    throw new Error('--deployment-root and --runtime-data-dir must be absolute paths.');
+  if (!path.isAbsolute(values['deployment-root'])) {
+    throw new Error('--deployment-root must be an absolute path.');
   }
   return Object.freeze({
     help: false,
     deploymentRoot: values['deployment-root'],
-    runtimeDataDirectory: values['runtime-data-dir'],
     conversationId: values['conversation-id'],
     userId: values['user-id'],
     message: values.message ?? null
@@ -81,7 +80,7 @@ async function processOneTurn(runtime, options, message, output, errorOutput) {
 }
 
 function usage() {
-  return 'Usage: node ./bin/chat-cli.js --deployment-root <absolute-path> --runtime-data-dir <absolute-path> --conversation-id <opaque-id> --user-id <opaque-id> [--message <text>]\n';
+  return 'Usage: node ./bin/chat-cli.js --deployment-root <absolute-path> --conversation-id <opaque-id> --user-id <opaque-id> [--message <text>]\n';
 }
 
 if (process.argv[1]?.endsWith('/chat-cli.js') || process.argv[1]?.endsWith('\\chat-cli.js')) {

@@ -37,7 +37,7 @@ The deployment resolver creates one immutable Deployment Descriptor after it ver
 3. it contains only the expected deployment-owned configuration and application roots;
 4. its configuration passes the Core configuration validator;
 5. the required approved-knowledge policy remains enforced; and
-6. all generated runtime data locations are confined to the selected deployment root.
+6. all generated durable-data and temporary-data locations are confined to the selected deployment root.
 
 The descriptor is the only object from which later runtime modules may obtain deployment-owned paths. Modules must receive it explicitly; none may re-resolve a root.
 
@@ -68,7 +68,7 @@ The runtime must not turn the returned prose into a JSON schema, select a canned
 
 ### 3.4 Development console
 
-Add an explicit command that receives a deployment-root argument and an isolated runtime-data directory. It is a testing instrument, not a channel adapter. It must never default to the Core checkout or write transcripts into the deployment's approved knowledge.
+Add an explicit command that receives a deployment-root argument. It is a testing instrument, not a channel adapter. It must never default to the Core checkout or write transcripts into the deployment's approved knowledge. Dedicated tools that write disposable artifacts must receive a path inside the deployment's `tmp/` directory.
 
 ### 3.5 Conversation acceptance and closure
 

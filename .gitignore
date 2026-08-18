@@ -17,5 +17,6 @@ config/*
 !config/templates/
 !config/templates/**
 deployments/
+# Legacy scratch from pre-recovery-layout clones; safe to delete and never used by current Core commands.
 runtime-data/
 tmp/

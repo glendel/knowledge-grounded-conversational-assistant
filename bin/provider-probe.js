@@ -10,7 +10,7 @@ const CAPABILITY = 'conversation_generation';
 
 export function parseProviderProbeArguments(argumentsList) {
   const values = {};
-  const valueOptions = new Set(['--deployment-root', '--runtime-data-dir', '--lane', '--message', '--language']);
+  const valueOptions = new Set(['--deployment-root', '--tmp-dir', '--lane', '--message', '--language']);
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
     if (argument === '--help') return Object.freeze({ help: true });
@@ -24,17 +24,20 @@ export function parseProviderProbeArguments(argumentsList) {
     values[argument.slice(2)] = value;
     index += 1;
   }
-  for (const key of ['deployment-root', 'runtime-data-dir', 'lane', 'message']) {
+  for (const key of ['deployment-root', 'tmp-dir', 'lane', 'message']) {
     if (!values[key]) throw new Error('--' + key + ' is required.');
   }
-  if (!path.isAbsolute(values['deployment-root']) || !path.isAbsolute(values['runtime-data-dir'])) {
-    throw new Error('--deployment-root and --runtime-data-dir must be absolute paths.');
+  if (!path.isAbsolute(values['deployment-root']) || !path.isAbsolute(values['tmp-dir'])) {
+    throw new Error('--deployment-root and --tmp-dir must be absolute paths.');
   }
+  const deploymentRoot = path.resolve(values['deployment-root']);
+  const temporaryDirectory = path.resolve(values['tmp-dir']);
+  if (!isWithin(path.join(deploymentRoot, 'tmp'), temporaryDirectory)) throw new Error('--tmp-dir must be inside <deployment-root>/tmp.');
   if (values.message.length > 2_000) throw new Error('--message must contain at most 2000 characters.');
   return Object.freeze({
     help: false,
-    deploymentRoot: values['deployment-root'],
-    runtimeDataDirectory: values['runtime-data-dir'],
+    deploymentRoot,
+    temporaryDirectory,
     laneId: values.lane,
     message: values.message,
     language: values.language ?? null,
@@ -91,19 +94,24 @@ export async function runProviderProbe({ argumentsList = process.argv.slice(2), 
     failureCode: outcome.failure?.code ?? null,
     completedAt: outcome.result?.completedAt ?? outcome.failure?.occurredAt ?? new Date().toISOString()
   });
-  await writeJsonAtomic(options.runtimeDataDirectory, path.posix.join('provider-probes', requestId + '.json'), report);
+  await writeJsonAtomic(options.temporaryDirectory, path.posix.join('provider-probes', requestId + '.json'), report);
   if (options.json) {
     output.write(JSON.stringify(options.showText && outcome.status === 'success' ? { ...report, text: outcome.result.text } : report) + '\n');
   } else if (outcome.status === 'success') {
     output.write('Provider probe succeeded for lane ' + lane.id + '. ' + (options.showText ? '\n\n' + outcome.result.text + '\n' : 'Response text was not persisted; use --show-text to inspect it.\n'));
   } else {
-    output.write('Provider probe failed: ' + report.failureCode + '. A sanitized report was written to the runtime data directory.\n');
+    output.write('Provider probe failed: ' + report.failureCode + '. A sanitized report was written to tmp/.\n');
   }
   return outcome.status === 'success' ? 0 : 1;
 }
 
 function usage() {
-  return 'Usage: node --env-file-if-exists=<deployment .env> ./bin/provider-probe.js --deployment-root <absolute-path> --runtime-data-dir <absolute-path> --lane <configured-lane> --message <non-sensitive synthetic probe> [--language en|es] [--show-text] [--json]\nThe probe makes an explicit, unqualified network check of one configured lane. It stores only a sanitized report, never the prompt, response text, provider body, or credentials.\n';
+  return 'Usage: node --env-file-if-exists=<deployment .env> ./bin/provider-probe.js --deployment-root <absolute-path> --tmp-dir <absolute-path-inside-deployment-tmp> --lane <configured-lane> --message <non-sensitive synthetic probe> [--language en|es] [--show-text] [--json]\nThe probe makes an explicit, unqualified network check of one configured lane. It stores only a sanitized report in tmp/, never the prompt, response text, provider body, or credentials.\n';
+}
+
+function isWithin(parent, candidate) {
+  const relative = path.relative(parent, candidate);
+  return relative === '' || (relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative));
 }
 
 if (process.argv[1]?.endsWith('/provider-probe.js') || process.argv[1]?.endsWith('\\provider-probe.js')) {

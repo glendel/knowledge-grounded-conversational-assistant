@@ -85,7 +85,7 @@ function createDeploymentPaths({ deploymentRoot, configDirectory, appDirectory, 
   return {
     configDirectory,
     appDirectory,
-    runtimeDataDirectory: resolveInside(deploymentRoot, configuration.runtime.dataDirectory, 'runtime.dataDirectory'),
+    durableDataDirectory: resolveInside(deploymentRoot, configuration.runtime.dataDirectory, 'runtime.dataDirectory'),
     chatMemoryDirectory: resolveInside(deploymentRoot, configuration.chatMemory.directory, 'chatMemory.directory'),
     gatewayDataDirectory: resolveInside(deploymentRoot, configuration.gateway.dataDirectory, 'gateway.dataDirectory'),
     knowledge: Object.freeze({

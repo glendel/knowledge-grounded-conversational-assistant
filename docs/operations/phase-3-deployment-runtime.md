@@ -10,7 +10,7 @@ The selected deployment root must contain:
 - app, containing deployment-owned approved knowledge and evaluation material;
 - environment-provided secrets when an enabled provider lane needs them.
 
-The deployment may be external or self-hosted. In self-hosted mode, `app/`, local `config/*.json`, `.env`, and runtime data live in the clone but remain ignored and untracked. In external mode, all deployment material remains outside the Core checkout. Never track provider credentials, logs, transcripts, raw sources, approved knowledge, or other deployment data in this repository.
+The deployment may be external or self-hosted. In self-hosted mode, `app/`, local `config/*.json`, `.env`, and `tmp/` live in the clone but remain ignored and untracked. Durable deployment data belongs under `app/`; `tmp/` contains only disposable scratch material. In external mode, all deployment material remains outside the Core checkout. Never track provider credentials, logs, transcripts, raw sources, approved knowledge, or other deployment data in this repository.
 
 See the [self-hosted deployment design](../architecture/phase-4-self-hosted-deployment-mode.md) for initialization and pull-safe update rules.
 
@@ -20,12 +20,11 @@ Use absolute paths:
 
     node --env-file-if-exists=<deployment-root>/.env ./bin/chat-cli.js ^
       --deployment-root <absolute-deployment-root> ^
-      --runtime-data-dir <absolute-disposable-runtime-directory> ^
       --conversation-id <opaque-conversation-id> ^
       --user-id <opaque-user-id> ^
       --message "Hello"
 
-Omit the message option for an interactive console. The runtime-data directory is intentionally explicit so later runtime records cannot silently appear in approved knowledge or the Core checkout.
+Omit the message option for an interactive console. The console does not write transcripts or scratch records by itself; use the dedicated evaluation and probe tools when temporary output is needed.
 
 The console prints a typed technical failure to stderr when no qualified provider lane is available. It does not replace a failed model call with a canned assistant answer.
 

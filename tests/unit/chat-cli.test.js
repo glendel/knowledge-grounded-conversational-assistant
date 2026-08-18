@@ -4,14 +4,13 @@ import test from 'node:test';
 
 import { parseChatCliArguments } from '../../bin/chat-cli.js';
 
-test('requires explicit deployment and isolated runtime data roots', () => {
+test('requires an explicit absolute deployment root', () => {
   assert.throws(
-    () => parseChatCliArguments(['--deployment-root', 'relative', '--runtime-data-dir', 'relative', '--conversation-id', 'conversation-001', '--user-id', 'user-001']),
-    /absolute paths/
+    () => parseChatCliArguments(['--deployment-root', 'relative', '--conversation-id', 'conversation-001', '--user-id', 'user-001']),
+    /absolute path/
   );
   const options = parseChatCliArguments([
     '--deployment-root', path.resolve('C:/synthetic/deployment'),
-    '--runtime-data-dir', path.resolve('C:/synthetic/runtime'),
     '--conversation-id', 'conversation-001',
     '--user-id', 'user-001',
     '--message', 'Hello.'

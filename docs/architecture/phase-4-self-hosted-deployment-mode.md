@@ -8,13 +8,13 @@ Make a normal clone independently configurable without changing or forking Core 
 git clone <Core repository> <assistant directory>
 ```
 
-The clone becomes one self-hosted deployment when an administrator creates its local `app/`, `config/`, `.env`, and runtime-data material. The same Core still supports an external deployment root for organizations that require physical separation.
+The clone becomes one self-hosted deployment when an administrator creates its local `app/`, `config/`, `.env`, and `tmp/` material. The same Core still supports an external deployment root for organizations that require physical separation.
 
 ## Ownership model
 
 Tracked Core content is generic and pullable: `src/`, `bin/`, `context/`, `docs/`, `tools/`, `app-template/`, and `config/templates/`.
 
-Local deployment content is ignored: `app/`, live `config/*.json`, `.env`, `runtime-data/`, and operational scratch data. It may name a real assistant, company, product, provider, model, or Knowledge Base, but it must never be staged or pushed to the Core repository.
+Local deployment content is ignored: `app/`, live `config/*.json`, `.env`, and `tmp/`. `app/` holds durable deployment material; `tmp/` holds disposable scratch data only. It may name a real assistant, company, product, provider, model, or Knowledge Base, but it must never be staged or pushed to the Core repository.
 
 ## Safety model
 

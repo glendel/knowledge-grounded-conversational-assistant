@@ -20,7 +20,7 @@ Build assistants that have natural, fluent, useful, evidence-grounded conversati
 
 Core-owned content includes generic source code, provider adapters, contracts, schemas, validators, templates, tests, and generic documentation.
 
-Deployment-owned content includes identity, purpose, actual configuration, approved knowledge, raw sources, provider routes, evaluation cases, policies, callers, secrets, runtime state, transcripts, and logs. It may live in a separate external deployment root or in ignored local `app/`, `config/`, `.env`, and runtime-data paths of a self-hosted clone. It must never be tracked by this repository.
+Deployment-owned content includes identity, purpose, actual configuration, approved knowledge, raw sources, provider routes, evaluation cases, policies, callers, secrets, durable operational state, transcripts, and logs. It may live in a separate external deployment root or in ignored local `app/`, `config/`, `.env`, and `tmp/` paths of a self-hosted clone. Durable data belongs in `app/`; `tmp/` is always disposable. It must never be tracked by this repository.
 
 ## Required checks
 

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -32,6 +32,8 @@ test('self-hosted initializer creates ignored deployment material without replac
     assert.match(await readFile(path.join(selfHostedRoot, 'app', 'README.md'), 'utf8'), /A deployment root owns/i);
     assert.match(await readFile(path.join(selfHostedRoot, 'config', 'assistant.json'), 'utf8'), /supportedLanguages/);
     assert.match(await readFile(path.join(selfHostedRoot, 'config', 'knowledge-policy.json'), 'utf8'), /approvedOnly/);
+    assert.equal((await stat(path.join(selfHostedRoot, 'tmp'))).isDirectory(), true);
+    await assert.rejects(() => stat(path.join(selfHostedRoot, 'runtime-data')), /ENOENT/);
     const descriptor = await createDeploymentDescriptor({ coreRoot: selfHostedRoot, deploymentRoot: selfHostedRoot });
     assert.equal(descriptor.mode, 'self_hosted');
 

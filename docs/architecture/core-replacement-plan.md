@@ -12,7 +12,7 @@ american-burger/      Maria and American Burger
 my-custom-assistant/  future deployment
 ```
 
-Every clone keeps its assistant-specific `app/`, `config/`, `.env`, and `runtime-data/` inside its own root. The Core repository contains only generic source, tests, contracts, templates, and documentation.
+Every clone keeps its assistant-specific `app/`, `config/`, `.env`, and `tmp/` inside its own root. Durable assistant data belongs in `app/`; `tmp/` is disposable. The Core repository contains only generic source, tests, contracts, templates, and documentation.
 
 ## Replacement standard
 
@@ -54,7 +54,7 @@ Extract the legacy gateway, store, security, worker, and administration commands
 
 - Retain registered callers, request signatures, nonce protection, caller and callback allowlists, asynchronous jobs, callbacks, retry isolation, and source expansion.
 - Keep channel systems as dumb terminals.
-- Put all gateway operational records under local ignored `runtime-data/`.
+- Put durable gateway operational records under ignored `app/data/gateway/` and disposable diagnostics under ignored `tmp/`.
 
 Done when a WebChat-like caller can safely submit a turn and receive an asynchronous callback without deployment-specific Core code.
 

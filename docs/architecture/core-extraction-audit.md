@@ -21,7 +21,7 @@ The North Star remains unchanged: model-led, natural, fluent, useful conversatio
 | Transcript evaluation and acceptance tests | legacy `tests/acceptance/` and milestone verification scripts | Missing | Promote as a generic probabilistic conversation harness; do not reuse business fixtures or exact-response assertions |
 | Legacy project-root discovery | `bin/project-root.js` | Deliberately absent | Do not promote: Core requires explicit deployment roots |
 | Legacy Milestone verifier scripts | `bin/verify-milestone-*.js` | Superseded by Core checks | Do not promote verbatim; retain only generic assertions when needed |
-| Business packs, raw sources, approved documents, logs, memory, callbacks, secrets | legacy `app/`, `.env`, runtime data | Deployment-owned | Never promote to Core |
+| Business packs, raw sources, approved documents, logs, memory, callbacks, secrets | legacy `app/`, `.env`, temporary scratch | Deployment-owned | Never promote to Core |
 
 ## Extraction order
 
@@ -43,8 +43,8 @@ Every promoted batch must be generic, contract-backed, test-backed, and runnable
 | `bin/admin-memory.js` | `bin/admin-memory.js` | Complete | Promoted as explicit expiry-cleanup tooling. |
 | `context/contracts/chat-memory-*.json` | `context/contracts/chat-memory-*.json` | Complete | Already present and now exercised by the promoted repository and tests. |
 | `src/gateway/gateway-security.js` | `src/gateway/gateway-security.js` | D | Promote first; test signatures, nonces, caller and callback allowlists. |
-| `src/gateway/gateway-store.js`, `gateway-runtime.js`, `gateway-server.js` | Same paths | D | Promote after security and descriptor integration; keep records in runtime-data. |
+| `src/gateway/gateway-store.js`, `gateway-runtime.js`, `gateway-server.js` | Same paths | D | Promote after security and descriptor integration; keep durable records in `app/data/gateway/` and diagnostics in `tmp/`. |
 | `bin/gateway-service.js`, `bin/admin-gateway.js` | Same paths | D | Promote as generic dumb-terminal operations. |
 | `bin/readiness.js`, `security-check.js`, `validate-provider-qualification.js` | `bin/` and/or `tools/` | E | Rework into Core checks that accept one clone root and expose no deployment data. |
 | `tests/acceptance/*`, live scripts, milestone verifiers | `tests/acceptance/`, `tools/` | C/E | Extract assertions and harness behavior, never exact reply text, business fixtures, or milestone branding. |
-| `bin/project-root.js`, `app/`, `.env`, legacy logs and runtime data | None | Never | Explicitly excluded from Core. |
+| `bin/project-root.js`, `app/`, `.env`, legacy logs and temporary scratch | None | Never | Explicitly excluded from Core. |

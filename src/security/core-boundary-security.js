@@ -6,6 +6,7 @@ import path from 'node:path';
 import { FoundationError } from '../core/foundation-error.js';
 
 const executeFile = promisify(execFile);
+// runtime-data/ remains ignored only so pre-recovery-layout clones can delete it safely after a pull.
 const REQUIRED_IGNORE_LINES = Object.freeze(['.env', '.env.*', '!.env.example', 'app/', 'config/*', '!config/templates/', '!config/templates/**', 'deployments/', 'runtime-data/', 'tmp/']);
 const DEPLOYMENT_TRACKED_PREFIXES = Object.freeze(['app/', 'deployments/', 'runtime-data/', 'tmp/']);
 const IGNORED_DIRECTORIES = new Set(['.git', 'app', 'deployments', 'node_modules', 'runtime-data', 'tmp']);

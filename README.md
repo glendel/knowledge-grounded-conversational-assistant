@@ -39,4 +39,4 @@ To remove expired local chat-memory snapshots explicitly, run:
 node ./bin/admin-memory.js --deployment-root <absolute-deployment-root> cleanup
 ```
 
-See [the Core repository charter](docs/architecture/core-repository-charter.md), [the self-hosted deployment design](docs/architecture/phase-4-self-hosted-deployment-mode.md), [the Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md), and [the North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md).
+See [the Core repository charter](docs/architecture/core-repository-charter.md), [the recovery and portability model](docs/architecture/recovery-and-portability-model.md), [the self-hosted deployment design](docs/architecture/phase-4-self-hosted-deployment-mode.md), [the Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md), and [the North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md).

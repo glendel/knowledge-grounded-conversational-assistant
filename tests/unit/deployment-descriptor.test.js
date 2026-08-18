@@ -97,7 +97,7 @@ test('keeps independently selected deployment configurations isolated', async ()
     const firstDescriptor = await createDeploymentDescriptor({ coreRoot: CORE_ROOT, deploymentRoot: first });
     const secondDescriptor = await createDeploymentDescriptor({ coreRoot: CORE_ROOT, deploymentRoot: second });
     assert.notEqual(firstDescriptor.deploymentRoot, secondDescriptor.deploymentRoot);
-    assert.notEqual(firstDescriptor.paths.runtimeDataDirectory, secondDescriptor.paths.runtimeDataDirectory);
+    assert.notEqual(firstDescriptor.paths.durableDataDirectory, secondDescriptor.paths.durableDataDirectory);
     assert.notEqual(firstDescriptor.paths.knowledge.approvedDirectory, secondDescriptor.paths.knowledge.approvedDirectory);
   } finally {
     await Promise.all([rm(first, { recursive: true, force: true }), rm(second, { recursive: true, force: true })]);

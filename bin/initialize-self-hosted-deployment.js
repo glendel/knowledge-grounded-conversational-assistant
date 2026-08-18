@@ -45,7 +45,7 @@ export async function initializeSelfHostedDeployment({ argumentsList = process.a
     'app/knowledge/indexes',
     'app/knowledge/evaluations',
     'app/evaluations/provider-qualification',
-    'runtime-data'
+    'tmp'
   ];
   for (const relativePath of directories) await mkdir(path.join(resolvedCoreRoot, relativePath), { recursive: true });
   await copyIfMissing(path.join(resolvedCoreRoot, 'app-template', 'README.md'), path.join(resolvedCoreRoot, 'app', 'README.md'));
