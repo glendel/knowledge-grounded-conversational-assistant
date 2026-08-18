@@ -48,7 +48,7 @@ Extract and harden generic live-transcript tooling.
 
 Completed on 2026-08-18. The Core now provides a generic, model-led acceptance harness that stores a redacted checkpoint after every completed turn, records provider-lane evidence and deterministic outcome constraints, verifies resume identity with a dataset fingerprint, and requires an exclusive per-run lease. The lease prevents two processes from overwriting one acceptance record; a stale lease requires deliberate administrator recovery only after the prior process has stopped. The harness never evaluates exact reply wording or supplies dialogue-tree replies.
 
-The closure evidence comprises two independent deployment runs: one twenty-turn Spanish conversation and one twenty-turn English conversation. Both completed without automatic blockers, preserved natural provider-generated prose, and recorded primary/fallback lane evidence where applicable. Deployment transcripts and datasets remain ignored deployment material; the generic closure record is [the Phase C closure certificate](phase-c-closure-certificate.md).
+The closure evidence comprises four independent deployment runs: each of two deployments completed one twenty-turn Spanish conversation and one twenty-turn English conversation. All completed without automatic blockers, preserved natural provider-generated prose, and recorded primary/fallback lane evidence where applicable. Cross-language testing also hardened generic language detection for ordinary messages that do not contain narrow language markers. Deployment transcripts and datasets remain ignored deployment material; the generic closure record is [the Phase C closure certificate](phase-c-closure-certificate.md).
 
 ### Phase D — REST and callback gateway
 

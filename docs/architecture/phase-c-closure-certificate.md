@@ -21,12 +21,12 @@ Phase C strengthens evidence about real conversations without turning the Core i
 
 The generic implementation passed Core boundary, lint, unit, integration, contract, and security checks. Unit coverage proves checkpoint/resume, redaction, deployment path confinement, dataset identity protection, active-run refusal, and deliberate stale-lease recovery.
 
-Two independently configured deployments then completed separate, realistic twenty-turn live conversations:
+Two independently configured deployments then completed realistic twenty-turn live conversations in every language each deployment declares as supported:
 
-- one Spanish scenario;
-- one English scenario.
+- the first deployment: one Spanish scenario and one English scenario;
+- the second deployment: one English scenario and one Spanish scenario.
 
-Each run completed with no automatic blockers. The persisted records showed natural provider-generated prose, correct requested-language outcomes, evidence/no-evidence distinctions, and observable primary/fallback provider-lane behavior. The records, datasets, identities, knowledge, and transcripts remain ignored deployment material and were not added to the Core.
+All four runs completed with no automatic blockers. Cross-language testing exposed a generic classifier weakness: an ordinary English message with none of the previous narrow English markers could fall back to the configured first language. The Core was hardened with broader business-neutral English and Spanish signals, direct unit coverage, and a fresh successful twenty-turn rerun. The persisted records showed natural provider-generated prose, correct requested-language outcomes, evidence/no-evidence distinctions, and observable primary/fallback provider-lane behavior. The records, datasets, identities, knowledge, and transcripts remain ignored deployment material and were not added to the Core.
 
 ## Honest limits
 
