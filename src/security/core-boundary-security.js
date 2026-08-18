@@ -11,7 +11,9 @@ const REQUIRED_IGNORE_LINES = Object.freeze(['.env', '.env.*', '!.env.example', 
 const DEPLOYMENT_TRACKED_PREFIXES = Object.freeze(['app/', 'deployments/', 'runtime-data/', 'tmp/']);
 const IGNORED_DIRECTORIES = new Set(['.git', 'app', 'deployments', 'node_modules', 'runtime-data', 'tmp']);
 const TEXT_FILE = /(?:^|\/)(?:\.[^/]+|[^/]+\.(?:js|json|md|txt|yml|yaml|example)|[^/.]+)$/i;
-const SECRET_VALUE_PATTERN = /(?:api[_-]?key|secret|token|password)\s*[:=]\s*["']?(?!\$\{|<|your_|replace_|change_me|example|placeholder)[a-z0-9_-]{12,}/i;
+// A Core source file legitimately handles token and secret *variables*. Detect
+// only quoted credential-like literals, which are the material boundary risk.
+const SECRET_VALUE_PATTERN = /(?:api[_-]?key|secret|token|password)\s*[:=]\s*["'](?!\$\{|<|your_|replace_|change_me|example|placeholder)[a-z0-9_-]{12,}["']/i;
 
 export async function findCoreBoundaryViolations({ coreRoot, disallowedTerms = [], disallowedPathFragments = [] } = {}) {
   assertCoreRoot(coreRoot);

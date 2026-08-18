@@ -34,6 +34,19 @@ test('detects synthetic identity and forbidden-path leakage', async () => {
   }
 });
 
+test('detects a credential-like literal without rejecting ordinary secret-handling identifiers', async () => {
+  const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'kgca-core-boundary-literal-'));
+  try {
+    await writeFile(path.join(temporaryRoot, 'safe.js'), "const sourceAccess = issueSourceAccess();\n", 'utf8');
+    await writeFile(path.join(temporaryRoot, 'leak.js'), "const " + "secret" + " = 'real-credential-123456';\n", 'utf8');
+    const report = await findCoreBoundaryViolations({ coreRoot: temporaryRoot });
+    assert.equal(report.violations.length, 1);
+    assert.match(report.violations[0], /leak\.js contains a possible credential value/);
+  } finally {
+    await rm(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
 test('allows ignored self-hosted material but rejects it when force-added to Core', async () => {
   const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'kgca-self-hosted-boundary-'));
   try {
