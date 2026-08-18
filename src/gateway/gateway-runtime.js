@@ -9,12 +9,12 @@ import { FoundationError } from '../core/foundation-error.js';
 import { assertSafeDeliveryTarget, scopedRuntimeId, signCallbackPayload, validateCallbackUrl } from './gateway-security.js';
 import { claimDueGatewayCallback, claimNextGatewayJob, completeGatewayJob, createGatewayStore, getGatewaySourceExpansion, recordGatewayCallbackAttempt } from './gateway-store.js';
 
-export async function createGatewayRuntime({ descriptor, environment = process.env, fetchImpl = globalThis.fetch, now = () => new Date(), observe = () => {}, conversationRuntime = null, qualificationRecords = null } = {}) {
+export async function createGatewayRuntime({ descriptor, environment = process.env, fetchImpl = globalThis.fetch, now = () => new Date(), observe = () => {}, conversationRuntime = null, qualificationRecords = null, conversationFactory = createConversationRuntime } = {}) {
   if (!descriptor?.deploymentRoot || !descriptor?.configuration || !descriptor?.contracts) throw new TypeError('A validated deployment descriptor is required.');
-  const conversation = conversationRuntime ?? createConversationRuntime({ descriptor, environment, fetchImpl, now, observe });
-  if (conversation.descriptor !== descriptor) throw new TypeError('The injected conversation runtime must use the supplied deployment descriptor.');
   const records = qualificationRecords ?? await loadDeploymentQualificationRecords({ descriptor });
   if (!Array.isArray(records)) throw new TypeError('qualificationRecords must be an array.');
+  const conversation = conversationRuntime ?? conversationFactory({ descriptor, qualificationRecords: records, environment, fetchImpl, now, observe });
+  if (conversation.descriptor !== descriptor) throw new TypeError('The injected conversation runtime must use the supplied deployment descriptor.');
   const store = createGatewayStore({ deploymentRoot: descriptor.deploymentRoot, configuration: descriptor.configuration, contracts: descriptor.contracts, now: () => now().toISOString() });
   return Object.freeze({ descriptor, environment, fetchImpl, now, observe, conversation, configuration: descriptor.configuration, contracts: descriptor.contracts, qualificationRecords: records, store });
 }
