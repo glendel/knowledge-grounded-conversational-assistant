@@ -43,4 +43,12 @@ To remove expired local chat-memory snapshots explicitly, run:
 node ./bin/admin-memory.js --deployment-root <absolute-deployment-root> cleanup
 ```
 
+For a self-hosted clone, start the Gateway from that clone's root without repeating its absolute path:
+
+```text
+npm run gateway:start -- --host 127.0.0.1 --port 4000
+```
+
+The command explicitly treats its current directory as the self-hosted deployment root. External deployments continue to use `bin/gateway-service.js --deployment-root <absolute-deployment-root>`.
+
 See [the Core repository charter](docs/architecture/core-repository-charter.md), [the recovery and portability model](docs/architecture/recovery-and-portability-model.md), [the self-hosted deployment design](docs/architecture/phase-4-self-hosted-deployment-mode.md), [the Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md), and [the North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md).

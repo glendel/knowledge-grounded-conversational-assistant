@@ -17,7 +17,8 @@
     "test:security": "node --test tests/security/*.test.js",
     "test": "npm run test:unit && npm run test:integration && npm run test:contracts && npm run test:security",
     "verify:phase-2": "node ./tools/verify-phase-2-closure.js",
-    "check": "npm run check:boundary && npm run lint && npm run test && npm run verify:phase-2"
+    "check": "npm run check:boundary && npm run lint && npm run test && npm run verify:phase-2",
+    "gateway:start": "node --env-file-if-exists=.env ./bin/start-self-hosted-gateway.js"
   },
   "dependencies": {
     "ajv": "^8.20.0",
