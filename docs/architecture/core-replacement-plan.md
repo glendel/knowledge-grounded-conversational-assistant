@@ -26,16 +26,16 @@ Create a capability-by-capability mapping from the legacy project to the Core. F
 
 Done when the extraction audit is current and every missing capability has an owner, source files, tests, and acceptance criteria.
 
-### Phase B — Durable chat memory
+### Phase B — Durable chat memory — Closed
 
 Extract the legacy file-backed chat memory and its administrator cleanup command.
 
 - Keep one snapshot per assistant/conversation/user scope.
 - Keep configured expiry, bounded turns, safe facts, redaction, atomic writes, restart hydration, and failure isolation.
-- Store records under the clone's ignored `runtime-data/`.
+- Store records only under the clone's ignored, deployment-configured local memory directory.
 - Integrate memory as untrusted continuity context, never factual evidence.
 
-Done when Paula and Maria both retain a natural conversation across a process restart, without cross-chat leakage or secret persistence.
+Completed on 2026-08-18. The Core now has scoped, file-backed memory; explicit expiry cleanup; redaction; bounded turns and summaries; atomic writes; restart hydration; and graceful read/write failure isolation. Unit and integration tests prove scope isolation, expiry, sensitive-data omission, concurrent writes, restart hydration, non-evidence separation, and failure isolation. Two independently configured deployment clones each retained a natural conversation across separate CLI processes after pulling Core commit `f6aea1e`.
 
 ### Phase C — Probabilistic conversation acceptance
 

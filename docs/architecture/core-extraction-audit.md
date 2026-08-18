@@ -14,7 +14,7 @@ The North Star remains unchanged: model-led, natural, fluent, useful conversatio
 | Provider adapters, routes, fallbacks, and qualification | `src/ai/`, `bin/provider-probe.js` | Present | Already promoted; qualify routes per deployment |
 | Prose-first conversation and approved retrieval | `src/conversation/` | Present with dedicated context assembly and output protections | Already promoted; stress-test with real transcripts |
 | Knowledge administration | `src/knowledge/`, `bin/admin-knowledge.js` | Present with explicit deployment CLI | Already promoted; development coverage release added for test packs |
-| Durable chat memory | `src/memory/chat-memory-repository.js`, `bin/admin-memory.js` | Missing | Promote next after focused audit, contract migration, and cross-deployment tests |
+| Durable chat memory | `src/memory/chat-memory-repository.js`, `bin/admin-memory.js` | Present | Promoted and live-verified in two independently configured deployment clones after separate-process restart tests |
 | REST and callback gateway | `src/gateway/`, `bin/gateway-service.js`, `bin/admin-gateway.js` | Missing | Promote after durable memory; rework against explicit deployment descriptor and self-hosted boundaries |
 | Gateway security and caller administration | `src/gateway/gateway-security.js`, `registered-callers.json` | Missing | Extract only with signed requests, allowlists, nonce isolation, async callbacks, and tests |
 | Readiness and production operations | `bin/readiness.js`, `bin/security-check.js`, validation scripts | Partial Core checks only | Rework into generic Core readiness gates after gateway extraction |
@@ -25,7 +25,7 @@ The North Star remains unchanged: model-led, natural, fluent, useful conversatio
 
 ## Extraction order
 
-1. Durable chat memory: port only file-backed, retention-bounded, conversation/user-isolated behavior; prove no cross-chat leakage and graceful expiry.
+1. Durable chat memory: complete. The generic file-backed, retention-bounded, conversation/user-isolated capability is promoted and live-verified in both initial deployments.
 2. Probabilistic transcript harness: make twenty-turn live conversations observable, resumable, provider-lane-aware, and evaluation-oriented without demanding fixed assistant wording.
 3. REST/callback gateway: extract transport as dumb-terminal integration, preserving signed requests, caller/callback allowlists, nonce protection, asynchronous jobs, and retry isolation.
 4. Operations: add deployment-level readiness, transcript reconstruction, and safe review queues.
@@ -39,9 +39,9 @@ Every promoted batch must be generic, contract-backed, test-backed, and runnable
 | `src/ai/*`, `bin/provider-probe.js` | `src/ai/*`, `bin/provider-probe.js` | Complete | Promoted. Verify qualified primary/fallback routes in each clone. |
 | `src/conversation/*`, `bin/chat-cli.js` | `src/conversation/*`, `bin/chat-cli.js` | Complete | Promoted as prose-first runtime. Verify natural grounded transcript behavior. |
 | `src/knowledge/knowledge-administration.js`, `bin/admin-knowledge.js` | Same paths | Complete | Promoted with explicit-root CLI and development coverage release. |
-| `src/memory/chat-memory-repository.js` | `src/memory/chat-memory-repository.js` | B | Promote the generic repository after adapting it to the Core descriptor and runtime-data convention. |
-| `bin/admin-memory.js` | `bin/admin-memory.js` | B | Promote as explicit cleanup/inspection tooling only. |
-| `context/contracts/chat-memory-*.json` | `context/contracts/chat-memory-*.json` | B | Promote with strict snapshot, turn, summary, fact, and maintenance contracts. |
+| `src/memory/chat-memory-repository.js` | `src/memory/chat-memory-repository.js` | Complete | Promoted as a generic descriptor-backed repository; records remain only under the configured ignored deployment directory. |
+| `bin/admin-memory.js` | `bin/admin-memory.js` | Complete | Promoted as explicit expiry-cleanup tooling. |
+| `context/contracts/chat-memory-*.json` | `context/contracts/chat-memory-*.json` | Complete | Already present and now exercised by the promoted repository and tests. |
 | `src/gateway/gateway-security.js` | `src/gateway/gateway-security.js` | D | Promote first; test signatures, nonces, caller and callback allowlists. |
 | `src/gateway/gateway-store.js`, `gateway-runtime.js`, `gateway-server.js` | Same paths | D | Promote after security and descriptor integration; keep records in runtime-data. |
 | `bin/gateway-service.js`, `bin/admin-gateway.js` | Same paths | D | Promote as generic dumb-terminal operations. |
