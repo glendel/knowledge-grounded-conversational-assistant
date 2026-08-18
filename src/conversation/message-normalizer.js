@@ -14,12 +14,17 @@ export function normalizeUserMessage({ message, supportedLanguages, maximumChara
 export function inferMessageLanguage(message, supportedLanguages) {
   const original = String(message);
   const normalized = original.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('und');
-  const spanish = languageSignal(normalized, /\b(hola|gracias|como|que|necesito|puedo|ayuda|sistema|factura|configurar|favor|explic[a-z]*|quiero|quien|prefiero|documentacion|entendido|ahora|antes|terminar|queda|fuera|dentro|sobre|puede|pueden|fuentes|revisar|aprobada|conocimiento|despliegue|fase|hechos)\b/gu) + (/[¿¡]/u.test(original) ? 2 : 0);
-  const english = languageSignal(normalized, /\b(hello|hi|thanks|thank|please|help|system|invoice|configure|how|what|who|why|where|when|which|approved|knowledge|deployment|runtime|before|finish|outside|inside|prefer|simple|explain)\b/gu);
+  const spanish = languageSignal(normalized, SPANISH_SIGNALS) + (/[¿¡]/u.test(original) ? 2 : 0);
+  const english = languageSignal(normalized, ENGLISH_SIGNALS);
   if (spanish > english && supportedLanguages.includes('es')) return 'es';
   if (english > spanish && supportedLanguages.includes('en')) return 'en';
   return supportedLanguages[0];
 }
+
+// These are intentionally ordinary language markers, not business vocabulary.
+// They keep a quoted product, menu, or source term from deciding the user language.
+const SPANISH_SIGNALS = /\b(hola|gracias|como|que|necesito|puedo|ayuda|sistema|factura|configurar|favor|explic[a-z]*|quiero|quien|prefiero|documentacion|entendido|ahora|antes|terminar|queda|fuera|dentro|sobre|puede|pueden|fuentes|revisar|aprobada|conocimiento|despliegue|fase|hechos|tengo|tienes|tenemos|para|con|por|donde|cuando|cual|cuales|tambien|solo|muchas|hasta|luego|adios|buenos|dias|puedes|podrias|debo|deberia|quieres|quiere|hablo|hablar|elegir|precio|pedido|disponible|ahora)\b/gu;
+const ENGLISH_SIGNALS = /\b(hello|hi|thanks|thank|please|help|system|invoice|configure|how|what|who|why|where|when|which|approved|knowledge|deployment|runtime|before|finish|outside|inside|prefer|simple|explain|the|and|with|for|from|this|that|these|those|my|your|can|could|would|should|does|is|are|was|were|have|has|will|need|want|tell|says|message|user|invalid|capitalization|matter|change|bill|already|accepted|pending|electronic|documents|send|alert|reset|password|safe|information|give|support|remember|trying|issue|related|accounting|period|year|without|close|detail|screen|guide|precisely|summarize|steps|anything|avoid|clear|goodbye)\b/gu;
 
 function languageSignal(text, expression) {
   return [...text.matchAll(expression)].length;
