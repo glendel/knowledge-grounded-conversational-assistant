@@ -76,3 +76,44 @@ test('rejects acceptance datasets and temporary paths outside their governed dep
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test('holds an exclusive run lease and lets an administrator explicitly recover only a stale lease', async () => {
+  const { root, datasetPath, temporaryDirectory } = await fixture();
+  try {
+    let enteredTurn;
+    const entered = new Promise((resolve) => { enteredTurn = resolve; });
+    let releaseTurn;
+    const release = new Promise((resolve) => { releaseTurn = resolve; });
+    const first = runConversationAcceptance({
+      deploymentRoot: root,
+      datasetPath,
+      temporaryDirectory,
+      runId: 'active-run',
+      maxTurns: 1,
+      ...fakes(),
+      turnProcessor: async () => {
+        enteredTurn();
+        await release;
+        return { status: 'success', turn: { text: 'Natural reply.', language: 'en', evidenceState: 'no_evidence', sourcesAvailable: false, knowledgeVersion: null, completedAt: '2026-08-18T00:00:00.000Z' } };
+      }
+    });
+    await entered;
+    await assert.rejects(
+      () => runConversationAcceptance({ deploymentRoot: root, datasetPath, temporaryDirectory, runId: 'active-run', maxTurns: 1, ...fakes() }),
+      /already active or has a stale lease/
+    );
+    releaseTurn();
+    await first;
+
+    await mkdir(path.join(temporaryDirectory, 'conversation-acceptance'), { recursive: true });
+    await writeFile(path.join(temporaryDirectory, 'conversation-acceptance', '.locked-run.lock'), '{"stale":true}\n', 'utf8');
+    await assert.rejects(
+      () => runConversationAcceptance({ deploymentRoot: root, datasetPath, temporaryDirectory, runId: 'locked-run', maxTurns: 1, ...fakes() }),
+      /already active or has a stale lease/
+    );
+    const recovered = await runConversationAcceptance({ deploymentRoot: root, datasetPath, temporaryDirectory, runId: 'locked-run', recoverLock: true, maxTurns: 1, ...fakes() });
+    assert.equal(recovered.turnCount, 1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

@@ -49,7 +49,7 @@ node --env-file-if-exists=.env ./tools/run-conversation-acceptance.js `
   --run-id <stable-run-id>
 ```
 
-The harness writes after every completed turn. If a provider is slow or a process is interrupted, resume the same dataset safely with `--resume` and the same run ID. The dataset fingerprint must match when resuming. Transcript text is redacted before storage; provider request bodies, hidden prompts, credentials, raw source text, and unredacted sensitive candidates are never stored.
+The harness writes after every completed turn and holds an exclusive per-run lease. If a provider is slow or a process is interrupted, resume the same dataset safely with `--resume` and the same run ID. The dataset fingerprint must match when resuming. If a crash leaves a lease file behind, first confirm that no process is still active, then add `--recover-lock`. Transcript text is redacted before storage; provider request bodies, hidden prompts, credentials, raw source text, and unredacted sensitive candidates are never stored.
 
 ## Required Phase C evidence
 

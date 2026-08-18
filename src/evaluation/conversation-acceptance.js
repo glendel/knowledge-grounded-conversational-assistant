@@ -1,16 +1,16 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { open, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 
 import { createConversationRuntime, processConversationTurn } from '../conversation/conversation-runtime.js';
-import { writeJsonAtomic } from '../core/safe-filesystem.js';
+import { assertDirectoryWithoutSymlinks, writeJsonAtomic } from '../core/safe-filesystem.js';
 import { createDeploymentDescriptor } from '../deployment/deployment-descriptor.js';
 import { loadDeploymentQualificationRecords } from '../deployment/provider-qualification-records.js';
 import { redactSensitiveText } from '../security/content-safety.js';
 
 const OUTPUT_DIRECTORY = 'conversation-acceptance';
 
-export async function runConversationAcceptance({ deploymentRoot, datasetPath, temporaryDirectory, runId = `acceptance-${randomUUID()}`, resume = false, maxTurns = null, environment = process.env, output = process.stdout, includeTranscript = false, now = () => new Date(), descriptorFactory = createDeploymentDescriptor, qualificationLoader = loadDeploymentQualificationRecords, runtimeFactory = defaultRuntimeFactory, turnProcessor = processConversationTurn } = {}) {
+export async function runConversationAcceptance({ deploymentRoot, datasetPath, temporaryDirectory, runId = `acceptance-${randomUUID()}`, resume = false, recoverLock = false, maxTurns = null, environment = process.env, output = process.stdout, includeTranscript = false, now = () => new Date(), descriptorFactory = createDeploymentDescriptor, qualificationLoader = loadDeploymentQualificationRecords, runtimeFactory = defaultRuntimeFactory, turnProcessor = processConversationTurn } = {}) {
   assertAbsolutePath(deploymentRoot, 'deploymentRoot');
   assertAbsolutePath(datasetPath, 'datasetPath');
   assertAbsolutePath(temporaryDirectory, 'temporaryDirectory');
@@ -18,7 +18,15 @@ export async function runConversationAcceptance({ deploymentRoot, datasetPath, t
   assertInside(deploymentRoot, path.join('app', 'evaluations'), datasetPath, 'datasetPath');
   assertInside(deploymentRoot, 'tmp', temporaryDirectory, 'temporaryDirectory');
   if (maxTurns !== null && (!Number.isInteger(maxTurns) || maxTurns < 1)) throw new Error('maxTurns must be a positive integer when supplied.');
+  const releaseLock = await acquireRunLock({ deploymentRoot, temporaryDirectory, runId, recoverLock, now });
+  try {
+    return await runAcceptanceUnlocked({ deploymentRoot, datasetPath, temporaryDirectory, runId, resume, maxTurns, environment, output, includeTranscript, now, descriptorFactory, qualificationLoader, runtimeFactory, turnProcessor });
+  } finally {
+    await releaseLock();
+  }
+}
 
+async function runAcceptanceUnlocked({ deploymentRoot, datasetPath, temporaryDirectory, runId, resume, maxTurns, environment, output, includeTranscript, now, descriptorFactory, qualificationLoader, runtimeFactory, turnProcessor }) {
   const datasetRaw = await readFile(datasetPath, 'utf8');
   const dataset = JSON.parse(datasetRaw);
   validateDataset(dataset);
@@ -46,6 +54,25 @@ export async function runConversationAcceptance({ deploymentRoot, datasetPath, t
     }
   }
   return persistAndReport({ record, artifactPath, now, output, includeTranscript, completed: true });
+}
+
+async function acquireRunLock({ deploymentRoot, temporaryDirectory, runId, recoverLock, now }) {
+  const directory = path.join(temporaryDirectory, OUTPUT_DIRECTORY);
+  const lockPath = path.join(directory, `.${runId}.lock`);
+  await assertDirectoryWithoutSymlinks(temporaryDirectory, { create: true, rootDirectory: path.join(deploymentRoot, 'tmp') });
+  await assertDirectoryWithoutSymlinks(directory, { create: true, rootDirectory: temporaryDirectory });
+  if (recoverLock) await rm(lockPath, { force: true });
+  let handle;
+  try {
+    handle = await open(lockPath, 'wx', 0o600);
+    await handle.writeFile(JSON.stringify({ schemaVersion: 1, runId, acquiredAt: timestamp(now) }) + '\n', 'utf8');
+  } catch (error) {
+    if (error?.code === 'EEXIST') throw new Error('Acceptance run is already active or has a stale lease. Confirm no process is active, then use --recover-lock.', { cause: error });
+    throw new Error('Acceptance run lease could not be created.', { cause: error });
+  } finally {
+    await handle?.close();
+  }
+  return async () => rm(lockPath, { force: true });
 }
 
 async function defaultRuntimeFactory({ descriptor, qualificationRecords, environment, observe }) {

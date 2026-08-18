@@ -9,7 +9,7 @@ export function parseConversationAcceptanceArguments(argumentsList) {
   const valueOptions = new Set(['--deployment-root', '--dataset', '--tmp-dir', '--run-id', '--max-turns']);
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
-    if (argument === '--resume' || argument === '--include-transcript') {
+    if (argument === '--resume' || argument === '--recover-lock' || argument === '--include-transcript') {
       values[argument] = true;
       continue;
     }
@@ -28,6 +28,7 @@ export function parseConversationAcceptanceArguments(argumentsList) {
     temporaryDirectory: path.resolve(values['--tmp-dir']),
     runId: values['--run-id'] ?? undefined,
     resume: values['--resume'] === true,
+    recoverLock: values['--recover-lock'] === true,
     maxTurns: values['--max-turns'] === undefined ? null : Number(values['--max-turns']),
     includeTranscript: values['--include-transcript'] === true
   });
@@ -55,7 +56,7 @@ export async function runConversationAcceptanceCommand({ argumentsList = process
 }
 
 function usage() {
-  return 'Usage: node --env-file-if-exists=<deployment .env> ./tools/run-conversation-acceptance.js --deployment-root <absolute-path> --dataset <absolute-path-inside-app/evaluations> --tmp-dir <absolute-path-inside-tmp> [--run-id <id>] [--resume] [--max-turns <count>] [--include-transcript]\nRuns model-led acceptance without exact-reply assertions. It persists a sanitized, resumable transcript only under tmp/.\n';
+  return 'Usage: node --env-file-if-exists=<deployment .env> ./tools/run-conversation-acceptance.js --deployment-root <absolute-path> --dataset <absolute-path-inside-app/evaluations> --tmp-dir <absolute-path-inside-tmp> [--run-id <id>] [--resume] [--recover-lock] [--max-turns <count>] [--include-transcript]\nRuns model-led acceptance without exact-reply assertions. It persists a sanitized, resumable transcript only under tmp/. Use --recover-lock only after confirming a previous process is no longer active.\n';
 }
 
 if (process.argv[1]?.endsWith('/run-conversation-acceptance.js') || process.argv[1]?.endsWith('\\run-conversation-acceptance.js')) {
