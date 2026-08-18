@@ -12,6 +12,7 @@ import {
   evaluateKnowledgeBase,
   extractSource,
   rejectDraft,
+  releaseDevelopmentCoverage,
   reviewKnowledgeBase,
   scanSources,
   validateKnowledgeBase
@@ -59,6 +60,7 @@ async function execute(service, { command, subcommand, options }) {
   if (command === 'extract' && !subcommand) return extractSource(service, { sourceId: required(options, 'source') });
   if (command === 'analyze' && !subcommand) return analyzeSource(service, { sourceId: required(options, 'source'), aiAdministrator: options.ai ?? 'authorized-ai-administrator' });
   if (command === 'draft' && subcommand === 'create') return createDraft(service, { sourceId: required(options, 'source'), documentId: required(options, 'id'), title: required(options, 'title'), language: options.language ?? 'en', aiAdministrator: options.ai ?? 'authorized-ai-administrator' });
+  if (command === 'coverage' && subcommand === 'release') return releaseDevelopmentCoverage(service, { sourceId: required(options, 'source'), authorizedBy: required(options, 'authorized-by') });
   if (command === 'validate' && !subcommand) return validateKnowledgeBase(service);
   if (command === 'review' && !subcommand) return reviewKnowledgeBase(service, { aiAdministrator: options.ai ?? 'authorized-ai-administrator' });
   if (command === 'approve' && !subcommand) return approveDraft(service, { documentId: required(options, 'draft'), approvedBy: required(options, 'approved-by'), declaration: required(options, 'declaration') });
@@ -89,7 +91,7 @@ function required(options, key) {
 }
 
 function usage() {
-  return 'Usage: node ./bin/admin-knowledge.js --deployment-root <absolute-path> <command>\nCommands: scan | classify --source <id> --authority <authoritative|supporting|historical|unclassified> --storage-class <local_only|safe_to_track|protected_store> | extract --source <id> | analyze --source <id> [--ai <administrator-id>] | draft create --source <id> --id <knowledge-id> --title <title> [--language <language>] [--ai <administrator-id>] | validate | review [--ai <administrator-id>] | approve --draft <knowledge-id> --approved-by <human-id> --declaration HUMAN_APPROVAL_CONFIRMED | reject --draft <knowledge-id> --rejected-by <human-id> --reason <reason> | index build | evaluate\n';
+  return 'Usage: node ./bin/admin-knowledge.js --deployment-root <absolute-path> <command>\nCommands: scan | classify --source <id> --authority <authoritative|supporting|historical|unclassified> --storage-class <local_only|safe_to_track|protected_store> | extract --source <id> | analyze --source <id> [--ai <administrator-id>] | draft create --source <id> --id <knowledge-id> --title <title> [--language <language>] [--ai <administrator-id>] | coverage release --source <id> --authorized-by <development-administrator> | validate | review [--ai <administrator-id>] | approve --draft <knowledge-id> --approved-by <human-id> --declaration HUMAN_APPROVAL_CONFIRMED | reject --draft <knowledge-id> --rejected-by <human-id> --reason <reason> | index build | evaluate\n';
 }
 
 if (process.argv[1]?.endsWith('/admin-knowledge.js') || process.argv[1]?.endsWith('\\admin-knowledge.js')) {

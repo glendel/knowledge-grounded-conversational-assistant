@@ -122,6 +122,28 @@ export async function createDraft(service, { sourceId: id, documentId, title, la
   return safeResult(service, 'draft-create', { sourceId: id, documentId, recordRelativePath, documentRelativePath: path.posix.join(draftDirectory, 'document.md') });
 }
 
+export async function releaseDevelopmentCoverage(service, { sourceId: id, authorizedBy }) {
+  if (service.configuration.runtime.environment !== 'development') throw new FoundationError('Development coverage release is available only in the development environment.', { code: 'KNOWLEDGE_DEVELOPMENT_RELEASE_FORBIDDEN' });
+  if (!authorizedBy || authorizedBy.length > 120) throw new FoundationError('An explicit development authorization identity is required.', { code: 'KNOWLEDGE_DEVELOPMENT_AUTHORIZATION_REQUIRED' });
+  const registry = await loadRegistry(service);
+  const source = requireActiveSource(registry, id);
+  if (source.authority !== 'authoritative') throw new FoundationError('Development coverage release requires an authoritative source.', { code: 'KNOWLEDGE_SOURCE_AUTHORITY_INSUFFICIENT', path: source.relativePath });
+  const artifact = await loadArtifact(service, id);
+  const segments = artifact.segments.filter((segment) => segment.text !== '[NO_EXTRACTABLE_TEXT]');
+  const createdAt = service.now();
+  const documentIds = [];
+  for (const segment of segments) {
+    const documentId = `knowledge_coverage-${hash(`${id}:${segment.id}`).slice(0, 16)}`;
+    const directory = path.posix.join(service.administration.approvedDirectory.replaceAll('\\', '/'), documentId);
+    const record = { schemaVersion: 1, id: documentId, status: 'approved', title: `Development coverage: ${source.relativePath} ${segment.location}`, language: 'en', tags: ['development-test', 'source-backed', 'full-coverage'], topics: [source.relativePath], retrievalTerms: [...new Set(tokenize(segment.text))].slice(0, 500), sourceRefs: [{ sourceId: id, sourceContentSha256: source.sourceContentSha256, segmentIds: [segment.id] }], claims: [{ id: 'claim_source-segment', text: segment.text, evidenceRefs: [{ sourceId: id, segmentIds: [segment.id] }] }], relationships: [], review: { aiAdministrator: 'development-coverage-release', privacyReviewed: true, freshnessReviewed: true, authorityReviewed: true, humanReviewStatus: 'approved', approvedBy: authorizedBy, approvedAt: createdAt }, createdAt, updatedAt: createdAt };
+    assertContract(service, 'knowledge-document.contract.json', record);
+    await writeJsonAtomic(service.deploymentRoot, path.posix.join(directory, 'record.json'), record);
+    await writeTextAtomic(service.deploymentRoot, path.posix.join(directory, 'document.md'), `# ${escapeMarkdown(record.title)}\n\n> Development-test coverage: source-backed, not production-certified.\n\n${segment.text}\n`);
+    documentIds.push(documentId);
+  }
+  return safeResult(service, 'development-coverage-release', { sourceId: id, documentCount: documentIds.length, documentIds });
+}
+
 export async function validateKnowledgeBase(service, { areas = ['draft', 'approved'] } = {}) {
   const validatedAreas = normalizeValidationAreas(areas);
   const registry = await loadRegistry(service);
