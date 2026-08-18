@@ -20,6 +20,8 @@
 
 `src/memory/` provides local, file-backed, chat-scoped continuity. It receives an explicit validated deployment root and validated configuration; it stores only bounded, redacted turns and explicitly safe facts. It must never become factual Knowledge Base evidence, global user profiling, or a reason to replace a natural response when storage is unavailable.
 
+`src/evaluation/` provides the reusable probabilistic conversation-acceptance harness. It runs the normal conversation runtime, applies only outcome-level constraints, and persists redacted transient transcripts beneath an explicit deployment `tmp/` path. It must never compare expected prose, score a response through a dialogue tree, or silently approve a human quality decision.
+
 `src/deployment/provider-qualification-records.js` loads deployment-owned provider qualification evidence only from the selected deployment. It must not embed a model, provider lane, or credential in the Core.
 
 Future modules for contracts, configuration, providers, knowledge, conversation, gateway, and operations work must preserve these boundaries. A module that needs deployment-owned files receives an explicit validated deployment-root dependency; it must not derive those files from the Core checkout.

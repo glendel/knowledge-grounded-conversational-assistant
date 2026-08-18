@@ -1,93 +1,65 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import process from 'node:process';
+import path from 'node:path';
 
-import { createConversationRuntime, processConversationTurn } from '../src/conversation/conversation-runtime.js';
-import { createDeploymentDescriptor } from '../src/deployment/deployment-descriptor.js';
-import { loadDeploymentQualificationRecords } from '../src/deployment/provider-qualification-records.js';
+import { runConversationAcceptance } from '../src/evaluation/conversation-acceptance.js';
 
-export async function runConversationAcceptance({ deploymentRoot, datasetPath, environment = process.env, output = process.stdout, includeReplies = false } = {}) {
-  if (!path.isAbsolute(deploymentRoot) || !path.isAbsolute(datasetPath)) throw new Error('deploymentRoot and datasetPath must be absolute paths.');
-  const dataset = JSON.parse(await readFile(datasetPath, 'utf8'));
-  validateDataset(dataset);
-  const descriptor = await createDeploymentDescriptor({ deploymentRoot });
-  const qualificationRecords = await loadDeploymentQualificationRecords({ descriptor });
-  const runtime = createConversationRuntime({ descriptor, qualificationRecords, environment });
-  const outcomes = [];
-  for (const scenario of dataset.scenarios) {
-    for (const turn of scenario.turns) {
-      const result = await processConversationTurn(runtime, {
-        conversationId: scenario.conversationId,
-        userId: scenario.userId,
-        message: turn.message
-      });
-      const outcome = assessTurn(result, turn, { includeReplies });
-      outcomes.push({ scenarioId: scenario.id, turnId: turn.id, ...outcome });
-    }
-  }
-  const report = {
-    schemaVersion: 1,
-    datasetId: dataset.id,
-    scenarioCount: dataset.scenarios.length,
-    turnCount: outcomes.length,
-    passed: outcomes.every((outcome) => outcome.passed),
-    outcomes
-  };
-  output.write(JSON.stringify(report, null, 2) + '\n');
-  return report;
-}
-
-function assessTurn(result, expectation, { includeReplies }) {
-  const failures = [];
-  if (result.status !== 'success') failures.push('technical_failure:' + (result.failure?.code ?? 'unknown'));
-  if (expectation.evidenceState && result.turn?.evidenceState !== expectation.evidenceState) failures.push('evidence_state_mismatch');
-  if (expectation.language && result.turn?.language !== expectation.language) failures.push('language_mismatch');
-  if (typeof result.turn?.text === 'string' && result.turn.text.length < 2) failures.push('reply_too_short');
-  return {
-    passed: failures.length === 0,
-    failures,
-    ...(includeReplies ? { reply: result.turn?.text ?? null } : {})
-  };
-}
-
-function validateDataset(dataset) {
-  if (!dataset || dataset.schemaVersion !== 1 || typeof dataset.id !== 'string' || !Array.isArray(dataset.scenarios) || dataset.scenarios.length === 0) {
-    throw new Error('Acceptance dataset must contain schemaVersion 1, id, and scenarios.');
-  }
-  for (const scenario of dataset.scenarios) {
-    if (typeof scenario.id !== 'string' || typeof scenario.conversationId !== 'string' || typeof scenario.userId !== 'string' || !Array.isArray(scenario.turns) || scenario.turns.length === 0) {
-      throw new Error('Each acceptance scenario must contain identifiers and turns.');
-    }
-    for (const turn of scenario.turns) {
-      if (typeof turn.id !== 'string' || typeof turn.message !== 'string') throw new Error('Each acceptance turn must contain id and message.');
-      if (turn.evidenceState !== undefined && !['evidence', 'no_evidence'].includes(turn.evidenceState)) throw new Error('Acceptance evidenceState is invalid.');
-    }
-  }
-}
-
-function parseArguments(argumentsList) {
+export function parseConversationAcceptanceArguments(argumentsList) {
+  if (argumentsList.length === 1 && argumentsList[0] === '--help') return Object.freeze({ help: true });
   const values = {};
+  const valueOptions = new Set(['--deployment-root', '--dataset', '--tmp-dir', '--run-id', '--max-turns']);
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
-    if (argument === '--include-replies') values[argument] = true;
-    else {
-      values[argument] = argumentsList[index + 1];
-      index += 1;
+    if (argument === '--resume' || argument === '--include-transcript') {
+      values[argument] = true;
+      continue;
     }
+    if (!valueOptions.has(argument)) throw new Error('Unsupported argument: ' + argument);
+    const value = argumentsList[index + 1];
+    if (!value || value.startsWith('--')) throw new Error(argument + ' requires a value.');
+    values[argument] = value;
+    index += 1;
   }
-  return values;
+  for (const option of ['--deployment-root', '--dataset', '--tmp-dir']) if (!values[option]) throw new Error(option + ' is required.');
+  for (const option of ['--deployment-root', '--dataset', '--tmp-dir']) if (!path.isAbsolute(values[option])) throw new Error(option + ' must be an absolute path.');
+  return Object.freeze({
+    help: false,
+    deploymentRoot: path.resolve(values['--deployment-root']),
+    datasetPath: path.resolve(values['--dataset']),
+    temporaryDirectory: path.resolve(values['--tmp-dir']),
+    runId: values['--run-id'] ?? undefined,
+    resume: values['--resume'] === true,
+    maxTurns: values['--max-turns'] === undefined ? null : Number(values['--max-turns']),
+    includeTranscript: values['--include-transcript'] === true
+  });
+}
+
+export async function runConversationAcceptanceCommand({ argumentsList = process.argv.slice(2), environment = process.env, output = process.stdout, errorOutput = process.stderr } = {}) {
+  let options;
+  try {
+    options = parseConversationAcceptanceArguments(argumentsList);
+  } catch (error) {
+    errorOutput.write(error.message + '\n' + usage());
+    return 2;
+  }
+  if (options.help) {
+    output.write(usage());
+    return 0;
+  }
+  try {
+    const report = await runConversationAcceptance({ ...options, environment, output });
+    return report.completed && report.passed === false ? 1 : 0;
+  } catch (error) {
+    errorOutput.write('Conversation acceptance failed: ' + (error instanceof Error ? error.message : String(error)) + '\n');
+    return 1;
+  }
+}
+
+function usage() {
+  return 'Usage: node --env-file-if-exists=<deployment .env> ./tools/run-conversation-acceptance.js --deployment-root <absolute-path> --dataset <absolute-path-inside-app/evaluations> --tmp-dir <absolute-path-inside-tmp> [--run-id <id>] [--resume] [--max-turns <count>] [--include-transcript]\nRuns model-led acceptance without exact-reply assertions. It persists a sanitized, resumable transcript only under tmp/.\n';
 }
 
 if (process.argv[1]?.endsWith('/run-conversation-acceptance.js') || process.argv[1]?.endsWith('\\run-conversation-acceptance.js')) {
-  const values = parseArguments(process.argv.slice(2));
-  runConversationAcceptance({
-    deploymentRoot: values['--deployment-root'],
-    datasetPath: values['--dataset'],
-    includeReplies: values['--include-replies'] === true
-  }).then((report) => {
-    process.exitCode = report.passed ? 0 : 1;
-  }).catch((error) => {
-    process.stderr.write('Conversation acceptance failed: ' + error.message + '\n');
-    process.exitCode = 1;
+  runConversationAcceptanceCommand().then((exitCode) => {
+    process.exitCode = exitCode;
   });
 }

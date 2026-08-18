@@ -52,8 +52,11 @@ Create an external JSON dataset with this shape:
             {
               "id": "turn-001",
               "message": "Hola",
-              "language": "es",
-              "evidenceState": "no_evidence"
+              "expect": {
+                "language": "es",
+                "evidenceState": "no_evidence",
+                "minimumReplyCharacters": 20
+              }
             }
           ]
         }
@@ -64,9 +67,11 @@ Run it with:
 
     node --env-file-if-exists=<deployment-root>/.env ./tools/run-conversation-acceptance.js ^
       --deployment-root <absolute-deployment-root> ^
-      --dataset <absolute-dataset-file>
+      --dataset <absolute-dataset-file-inside-app/evaluations> ^
+      --tmp-dir <absolute-deployment-tmp-directory> ^
+      --run-id <stable-run-id>
 
-The tool checks technical success, evidence state, and language fit without requiring exact assistant wording. Human review still decides whether the transcript is natural, grounded, and useful.
+The tool checks technical success, evidence state, and language fit without requiring exact assistant wording. It stores only a sanitized, resumable transcript under `tmp/conversation-acceptance/`. Human review still decides whether the transcript is natural, grounded, and useful.
 
 ## Migration rule
 
