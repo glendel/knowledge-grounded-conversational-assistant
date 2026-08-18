@@ -12,13 +12,13 @@ The Core exists to make assistants natural, fluent, useful, and grounded in appr
 
 ## Current status
 
-Phase 3 is closed. It delivered the explicit deployment-root model and the first natural, prose-first conversation runtime under the [North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md). The [Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md) records the evidence, scope, and limitations.
+The Core has closed its prose-first conversation, durable-memory, probabilistic-acceptance, and REST/callback gateway extraction phases. The natural conversation runtime follows the [North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md); its original scope and limits are recorded in [the Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md).
 
 The Core now also provides durable, local, scoped chat continuity. It persists only bounded and redacted recent turns plus explicitly safe chat facts, expires it under deployment-configured retention, and never treats it as approved Knowledge Base evidence. An unreadable or unwritable memory record is observed without replacing natural model-led conversation.
 
 Phase C is closed: the Core has a generic probabilistic conversation-acceptance harness for deployment-owned twenty-turn scenarios. It stores redacted checkpoints only inside the deployment `tmp/` directory, records actual provider-lane evidence, supports safe resume with a dataset fingerprint, and uses an exclusive per-run lease to prevent concurrent resume corruption. It checks outcome constraints such as language, evidence state, and minimum reply length; it never dictates reply wording. See the [Phase C closure certificate](docs/architecture/phase-c-closure-certificate.md). Learning, tools, and additional channels remain later phases.
 
-Phase D adds a generic asynchronous REST and callback gateway for dumb terminals. It accepts only signed, registered-caller requests; stores deployment-owned jobs and callbacks under `app/data/gateway/`; isolates caller scopes; validates callback destinations; and retries immutable callbacks without rerunning a conversation. See the [Phase D architecture](docs/architecture/phase-d-rest-callback-gateway.md).
+Phase D is closed: the Core provides a generic asynchronous REST and callback gateway for dumb terminals. It accepts only signed, registered-caller requests; stores deployment-owned jobs and callbacks under `app/data/gateway/`; isolates caller scopes; validates callback destinations; serializes one active worker per deployment; and retries immutable callbacks without rerunning a conversation. See the [Phase D closure certificate](docs/architecture/phase-d-closure-certificate.md).
 
 The Core contains no tracked active provider lane, model choice, credential, caller, or real Knowledge Base. It supports both an explicit external deployment root and an explicit self-hosted deployment root equal to the clone root. Runtime retrieval and real conversation are available once an administrator supplies and validates local deployment material.
 

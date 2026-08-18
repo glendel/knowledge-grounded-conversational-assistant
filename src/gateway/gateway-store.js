@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { readdir, unlink } from 'node:fs/promises';
+import { open, readdir, rm, unlink } from 'node:fs/promises';
 import path from 'node:path';
 
 import { validateContractInstance } from '../contracts/contract-registry.js';
@@ -13,6 +13,24 @@ export function createGatewayStore({ deploymentRoot, configuration, contracts, n
   if (!deploymentRoot || !configuration?.gateway || !contracts) throw new FoundationError('Gateway storage dependencies are missing.', { code: 'GATEWAY_STORE_DEPENDENCY_MISSING' });
   resolveInside(deploymentRoot, configuration.gateway.dataDirectory, 'gateway data directory');
   return Object.freeze({ deploymentRoot, configuration, contracts, now, locks: new Map() });
+}
+
+export async function acquireGatewayWorkerLease(store, { recover = false } = {}) {
+  const directory = resolveInside(store.deploymentRoot, store.configuration.gateway.dataDirectory, 'gateway data directory');
+  await assertDirectoryWithoutSymlinks(directory, { create: true, rootDirectory: store.deploymentRoot });
+  const leasePath = path.join(directory, '.worker.lock');
+  if (recover) await rm(leasePath, { force: true });
+  let handle;
+  try {
+    handle = await open(leasePath, 'wx', 0o600);
+    await handle.writeFile(`${JSON.stringify({ schemaVersion: 1, acquiredAt: store.now() })}\n`, 'utf8');
+  } catch (error) {
+    if (error?.code === 'EEXIST') throw new FoundationError('A gateway worker is already active or left a stale lease. Confirm it is stopped, then use --recover-worker-lock.', { code: 'GATEWAY_WORKER_LEASE_ACTIVE' });
+    throw new FoundationError('Gateway worker lease could not be created.', { code: 'GATEWAY_WORKER_LEASE_FAILED', cause: error });
+  } finally {
+    await handle?.close();
+  }
+  return async () => rm(leasePath, { force: true });
 }
 
 export async function consumeGatewayNonce(store, { callerId, nonce, expiresAt }) {

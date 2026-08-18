@@ -15,8 +15,8 @@ The North Star remains unchanged: model-led, natural, fluent, useful conversatio
 | Prose-first conversation and approved retrieval | `src/conversation/` | Present with dedicated context assembly and output protections | Already promoted; stress-test with real transcripts |
 | Knowledge administration | `src/knowledge/`, `bin/admin-knowledge.js` | Present with explicit deployment CLI | Already promoted; development coverage release added for test packs |
 | Durable chat memory | `src/memory/chat-memory-repository.js`, `bin/admin-memory.js` | Present | Promoted and live-verified in two independently configured deployment clones after separate-process restart tests |
-| REST and callback gateway | `src/gateway/`, `bin/gateway-service.js`, `bin/admin-gateway.js` | Missing | Promote after durable memory; rework against explicit deployment descriptor and self-hosted boundaries |
-| Gateway security and caller administration | `src/gateway/gateway-security.js`, `registered-callers.json` | Missing | Extract only with signed requests, allowlists, nonce isolation, async callbacks, and tests |
+| REST and callback gateway | `src/gateway/`, `bin/gateway-service.js`, `bin/admin-gateway.js` | Present | Promoted as an explicit-descriptor, signed asynchronous boundary with durable callback retry and worker lease |
+| Gateway security and caller administration | `src/gateway/gateway-security.js`, `registered-callers.json` | Present | Promoted with signed requests, allowlists, nonce isolation, async callbacks, SSRF protections, and tests |
 | Readiness and production operations | `bin/readiness.js`, `bin/security-check.js`, validation scripts | Partial Core checks only | Rework into generic Core readiness gates after gateway extraction |
 | Transcript evaluation and acceptance tests | legacy `tests/acceptance/` and milestone verification scripts | Present | Promoted as a generic, redacted, resumable probabilistic conversation harness with provider-lane evidence and exclusive run leases; no business fixtures or exact-response assertions |
 | Legacy project-root discovery | `bin/project-root.js` | Deliberately absent | Do not promote: Core requires explicit deployment roots |
@@ -27,10 +27,10 @@ The North Star remains unchanged: model-led, natural, fluent, useful conversatio
 
 1. Durable chat memory: complete. The generic file-backed, retention-bounded, conversation/user-isolated capability is promoted and live-verified in both initial deployments.
 2. Probabilistic transcript harness: complete. Twenty-turn Spanish and English live conversations are observable, resumable, provider-lane-aware, redacted, and evaluation-oriented without demanding fixed assistant wording. A run lease prevents concurrent resume corruption.
-3. REST/callback gateway: extract transport as dumb-terminal integration, preserving signed requests, caller/callback allowlists, nonce protection, asynchronous jobs, and retry isolation.
+3. REST/callback gateway: complete. The dumb-terminal transport is promoted with signed requests, caller/callback allowlists, nonce protection, asynchronous jobs, immutable callback retry isolation, SSRF-resistant callback validation, and an exclusive worker lease.
 4. Operations: add deployment-level readiness, transcript reconstruction, and safe review queues.
 
-Every promoted batch must be generic, contract-backed, test-backed, and runnable by both the Paula and Maria deployments after `git pull`. A legacy implementation is evidence and a candidate, not authority to copy unchanged.
+Every promoted batch must be generic, contract-backed, test-backed, and runnable by independently configured deployments after `git pull`. A legacy implementation is evidence and a candidate, not authority to copy unchanged.
 
 ## File-level extraction manifest
 
@@ -42,9 +42,9 @@ Every promoted batch must be generic, contract-backed, test-backed, and runnable
 | `src/memory/chat-memory-repository.js` | `src/memory/chat-memory-repository.js` | Complete | Promoted as a generic descriptor-backed repository; records remain only under the configured ignored deployment directory. |
 | `bin/admin-memory.js` | `bin/admin-memory.js` | Complete | Promoted as explicit expiry-cleanup tooling. |
 | `context/contracts/chat-memory-*.json` | `context/contracts/chat-memory-*.json` | Complete | Already present and now exercised by the promoted repository and tests. |
-| `src/gateway/gateway-security.js` | `src/gateway/gateway-security.js` | D | Promote first; test signatures, nonces, caller and callback allowlists. |
-| `src/gateway/gateway-store.js`, `gateway-runtime.js`, `gateway-server.js` | Same paths | D | Promote after security and descriptor integration; keep durable records in `app/data/gateway/` and diagnostics in `tmp/`. |
-| `bin/gateway-service.js`, `bin/admin-gateway.js` | Same paths | D | Promote as generic dumb-terminal operations. |
+| `src/gateway/gateway-security.js` | `src/gateway/gateway-security.js` | Complete | Promoted with signature, nonce, caller/callback allowlist, and SSRF-safe callback target validation. |
+| `src/gateway/gateway-store.js`, `gateway-runtime.js`, `gateway-server.js` | Same paths | Complete | Promoted as descriptor-bound durable jobs, callbacks, source expansion, and HTTP server; records remain in deployment data and worker lease prevents concurrent processing. |
+| `bin/gateway-service.js`, `bin/admin-gateway.js` | Same paths | Complete | Promoted as generic dumb-terminal operations with explicit-root and explicit stale-worker recovery behavior. |
 | `bin/readiness.js`, `security-check.js`, `validate-provider-qualification.js` | `bin/` and/or `tools/` | E | Rework into Core checks that accept one clone root and expose no deployment data. |
 | `tests/acceptance/*`, live scripts, milestone verifiers | `src/evaluation/`, `tools/run-conversation-acceptance.js`, tests | C | Promoted as generic resumable acceptance behavior with outcome constraints, redaction, and run-lease protection; never exact reply text, business fixtures, or milestone branding. |
 | `bin/project-root.js`, `app/`, `.env`, legacy logs and temporary scratch | None | Never | Explicitly excluded from Core. |

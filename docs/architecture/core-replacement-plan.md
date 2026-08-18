@@ -7,8 +7,8 @@ Make `knowledge-grounded-conversational-assistant/` the clean, reusable replacem
 Each real assistant remains a simple self-hosted clone:
 
 ```text
-lazaro-software/      Paula and UNICO
-american-burger/      Maria and American Burger
+support-assistant/  one configured support deployment
+seller-assistant/   one configured product-guidance deployment
 my-custom-assistant/  future deployment
 ```
 
@@ -22,7 +22,7 @@ The Core is a replacement when a fresh clone can configure, digest knowledge, co
 
 ### Phase A — Parity baseline
 
-Create a capability-by-capability mapping from the legacy project to the Core. Freeze the rule that legacy code is reused when generic, but never copied with Paula/UNICO paths, data, secrets, logs, or deterministic dialogue behavior.
+Create a capability-by-capability mapping from the legacy project to the Core. Freeze the rule that legacy code is reused when generic, but never copied with deployment-specific paths, data, secrets, logs, or deterministic dialogue behavior.
 
 Done when the extraction audit is current and every missing capability has an owner, source files, tests, and acceptance criteria.
 
@@ -50,7 +50,7 @@ Completed on 2026-08-18. The Core now provides a generic, model-led acceptance h
 
 The closure evidence comprises four independent deployment runs: each of two deployments completed one twenty-turn Spanish conversation and one twenty-turn English conversation. All completed without automatic blockers, preserved natural provider-generated prose, and recorded primary/fallback lane evidence where applicable. Cross-language testing also hardened generic language detection for ordinary messages that do not contain narrow language markers. Deployment transcripts and datasets remain ignored deployment material; the generic closure record is [the Phase C closure certificate](phase-c-closure-certificate.md).
 
-### Phase D — REST and callback gateway
+### Phase D — REST and callback gateway — Closed
 
 Extract the legacy gateway, store, security, worker, and administration commands.
 
@@ -58,7 +58,9 @@ Extract the legacy gateway, store, security, worker, and administration commands
 - Keep channel systems as dumb terminals.
 - Put durable gateway operational records under ignored `app/data/gateway/` and disposable diagnostics under ignored `tmp/`.
 
-Done when a WebChat-like caller can safely submit a turn and receive an asynchronous callback without deployment-specific Core code.
+Completed on 2026-08-18. The Core now supplies a descriptor-bound, signed, asynchronous REST gateway for dumb terminals. It validates registered callers, signatures, timestamps, nonce replay prevention, idempotency, callback allowlists, and DNS/IP-safe callback delivery. Accepted jobs, immutable callback outcomes, nonce records, and source-expansion records remain under the deployment's ignored data directory. The worker holds an exclusive deployment lease so an accidental second process cannot claim or deliver the same work; explicit stale-lease recovery is available only after the previous worker is confirmed stopped.
+
+Core integration tests prove signed intake, rejection of stale/replayed messages, immutable callback retry without repeating conversation work, caller-scoped source expansion, safe handling of untrusted language hints, and worker-lease behavior. A configured self-hosted deployment additionally completed a real provider-backed round trip: signed `202` intake, normal grounded model response, language determined from actual user text rather than the terminal hint, signed callback, and `204` delivery. The generic evidence and boundaries are recorded in [the Phase D closure certificate](phase-d-closure-certificate.md). Deployment-specific caller credentials, callback targets, and provider qualification remain local deployment responsibilities.
 
 ### Phase E — Operations and readiness
 
@@ -68,7 +70,7 @@ Done when one command can verify a clone is ready for development testing and an
 
 ### Phase F — Replacement certification
 
-Run the same generic acceptance suite against Paula and Maria.
+Run the same generic acceptance suite against two independently configured deployments.
 
 The certification requires:
 
@@ -83,4 +85,4 @@ The certification requires:
 
 ## Promotion rule
 
-Each phase is promoted in a small Core commit only after it is generic, tested, and free of deployment data. Paula and Maria receive every promotion with `git pull`; their local business packs are never committed to the Core repository.
+Each phase is promoted in a small Core commit only after it is generic, tested, and free of deployment data. Independently configured deployments receive every promotion with `git pull`; their local business packs are never committed to the Core repository.

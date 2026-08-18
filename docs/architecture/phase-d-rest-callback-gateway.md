@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Expose one configured assistant to external systems while keeping those systems as dumb terminals. A terminal submits a signed user turn, receives a quick acknowledgement, and later receives exactly one signed callback containing the immutable result. The terminal does not own conversation logic, retrieval, memory, provider selection, security policy, or handoff behavior.
+Expose one configured assistant to external systems while keeping those systems as dumb terminals. A terminal submits a signed user turn, receives a quick acknowledgement, and later receives a signed callback containing the immutable result. If delivery fails, the same immutable callback may be retried; the terminal does not own conversation logic, retrieval, memory, provider selection, security policy, or handoff behavior.
 
 ## Core boundary
 
@@ -33,6 +33,8 @@ Outside terminal
 
 Gateway jobs, nonce records, source-expansion records, and callback outbox records live only under the deployment-owned `app/data/gateway/` directory. They are strict JSON, atomic, bounded, and disposable only according to configured retention cleanup. Diagnostics belong under `tmp/`; no records belong in the Core repository.
 
+One deployment uses one active gateway worker. The service holds an exclusive file lease so an accidental second worker cannot claim or deliver the same records. After an unclean shutdown, an administrator must first confirm that the old process has stopped before using `--recover-worker-lock`.
+
 ## Runtime behavior
 
 - `POST /v1/turns` responds `202` with an acknowledgement after secure durable acceptance.
@@ -46,6 +48,7 @@ Gateway jobs, nonce records, source-expansion records, and callback outbox recor
 ```text
 node --env-file-if-exists=.env ./bin/gateway-service.js --deployment-root <absolute-deployment-root> --host 127.0.0.1 --port 3000
 node --env-file-if-exists=.env ./bin/gateway-service.js --deployment-root <absolute-deployment-root> --process-once
+node --env-file-if-exists=.env ./bin/gateway-service.js --deployment-root <absolute-deployment-root> --recover-worker-lock
 node --env-file-if-exists=.env ./bin/admin-gateway.js --deployment-root <absolute-deployment-root> jobs
 node --env-file-if-exists=.env ./bin/admin-gateway.js --deployment-root <absolute-deployment-root> callbacks
 node --env-file-if-exists=.env ./bin/admin-gateway.js --deployment-root <absolute-deployment-root> cleanup
@@ -53,4 +56,4 @@ node --env-file-if-exists=.env ./bin/admin-gateway.js --deployment-root <absolut
 
 ## Acceptance criteria
 
-Phase D is ready for a deployment test when the Core checks pass and a configured self-hosted deployment proves signed asynchronous intake, signed callback delivery, replay rejection, duplicate idempotency, callback retry without duplicate conversation work, and caller-scoped source expansion.
+Phase D closed on 2026-08-18. Core tests prove signed asynchronous intake, replay rejection, duplicate idempotency, callback retry without duplicate conversation work, caller-scoped source expansion, and exclusive-worker behavior. A configured self-hosted deployment also completed a real provider-backed signed callback round trip. Each new deployment still must provision its own caller registry, secrets, callback allowlists, qualified provider route, and local integration test before it is approved for testing.
