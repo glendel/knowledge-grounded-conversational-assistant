@@ -18,7 +18,7 @@ The North Star remains unchanged: model-led, natural, fluent, useful conversatio
 | REST and callback gateway | `src/gateway/`, `bin/gateway-service.js`, `bin/admin-gateway.js` | Missing | Promote after durable memory; rework against explicit deployment descriptor and self-hosted boundaries |
 | Gateway security and caller administration | `src/gateway/gateway-security.js`, `registered-callers.json` | Missing | Extract only with signed requests, allowlists, nonce isolation, async callbacks, and tests |
 | Readiness and production operations | `bin/readiness.js`, `bin/security-check.js`, validation scripts | Partial Core checks only | Rework into generic Core readiness gates after gateway extraction |
-| Transcript evaluation and acceptance tests | legacy `tests/acceptance/` and milestone verification scripts | Missing | Promote as a generic probabilistic conversation harness; do not reuse business fixtures or exact-response assertions |
+| Transcript evaluation and acceptance tests | legacy `tests/acceptance/` and milestone verification scripts | Present | Promoted as a generic, redacted, resumable probabilistic conversation harness with provider-lane evidence and exclusive run leases; no business fixtures or exact-response assertions |
 | Legacy project-root discovery | `bin/project-root.js` | Deliberately absent | Do not promote: Core requires explicit deployment roots |
 | Legacy Milestone verifier scripts | `bin/verify-milestone-*.js` | Superseded by Core checks | Do not promote verbatim; retain only generic assertions when needed |
 | Business packs, raw sources, approved documents, logs, memory, callbacks, secrets | legacy `app/`, `.env`, temporary scratch | Deployment-owned | Never promote to Core |
@@ -26,7 +26,7 @@ The North Star remains unchanged: model-led, natural, fluent, useful conversatio
 ## Extraction order
 
 1. Durable chat memory: complete. The generic file-backed, retention-bounded, conversation/user-isolated capability is promoted and live-verified in both initial deployments.
-2. Probabilistic transcript harness: make twenty-turn live conversations observable, resumable, provider-lane-aware, and evaluation-oriented without demanding fixed assistant wording.
+2. Probabilistic transcript harness: complete. Twenty-turn Spanish and English live conversations are observable, resumable, provider-lane-aware, redacted, and evaluation-oriented without demanding fixed assistant wording. A run lease prevents concurrent resume corruption.
 3. REST/callback gateway: extract transport as dumb-terminal integration, preserving signed requests, caller/callback allowlists, nonce protection, asynchronous jobs, and retry isolation.
 4. Operations: add deployment-level readiness, transcript reconstruction, and safe review queues.
 
@@ -46,5 +46,5 @@ Every promoted batch must be generic, contract-backed, test-backed, and runnable
 | `src/gateway/gateway-store.js`, `gateway-runtime.js`, `gateway-server.js` | Same paths | D | Promote after security and descriptor integration; keep durable records in `app/data/gateway/` and diagnostics in `tmp/`. |
 | `bin/gateway-service.js`, `bin/admin-gateway.js` | Same paths | D | Promote as generic dumb-terminal operations. |
 | `bin/readiness.js`, `security-check.js`, `validate-provider-qualification.js` | `bin/` and/or `tools/` | E | Rework into Core checks that accept one clone root and expose no deployment data. |
-| `tests/acceptance/*`, live scripts, milestone verifiers | `tests/acceptance/`, `tools/` | C/E | Extract assertions and harness behavior, never exact reply text, business fixtures, or milestone branding. |
+| `tests/acceptance/*`, live scripts, milestone verifiers | `src/evaluation/`, `tools/run-conversation-acceptance.js`, tests | C | Promoted as generic resumable acceptance behavior with outcome constraints, redaction, and run-lease protection; never exact reply text, business fixtures, or milestone branding. |
 | `bin/project-root.js`, `app/`, `.env`, legacy logs and temporary scratch | None | Never | Explicitly excluded from Core. |

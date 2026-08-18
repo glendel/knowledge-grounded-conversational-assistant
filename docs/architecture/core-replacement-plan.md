@@ -37,7 +37,7 @@ Extract the legacy file-backed chat memory and its administrator cleanup command
 
 Completed on 2026-08-18. The Core now has scoped, file-backed memory; explicit expiry cleanup; redaction; bounded turns and summaries; atomic writes; restart hydration; and graceful read/write failure isolation. Unit and integration tests prove scope isolation, expiry, sensitive-data omission, concurrent writes, restart hydration, non-evidence separation, and failure isolation. Two independently configured deployment clones each retained a natural conversation across separate CLI processes after pulling Core commit `f6aea1e`.
 
-### Phase C — Probabilistic conversation acceptance
+### Phase C — Probabilistic conversation acceptance — Closed
 
 Extract and harden generic live-transcript tooling.
 
@@ -46,7 +46,9 @@ Extract and harden generic live-transcript tooling.
 - Record selected provider lane, typed failures, evidence state, language fit, and reviewer findings.
 - Never require exact answer text or introduce reply templates.
 
-Done when each deployment can run and review realistic twenty-turn conversations before human testing.
+Completed on 2026-08-18. The Core now provides a generic, model-led acceptance harness that stores a redacted checkpoint after every completed turn, records provider-lane evidence and deterministic outcome constraints, verifies resume identity with a dataset fingerprint, and requires an exclusive per-run lease. The lease prevents two processes from overwriting one acceptance record; a stale lease requires deliberate administrator recovery only after the prior process has stopped. The harness never evaluates exact reply wording or supplies dialogue-tree replies.
+
+The closure evidence comprises two independent deployment runs: one twenty-turn Spanish conversation and one twenty-turn English conversation. Both completed without automatic blockers, preserved natural provider-generated prose, and recorded primary/fallback lane evidence where applicable. Deployment transcripts and datasets remain ignored deployment material; the generic closure record is [the Phase C closure certificate](phase-c-closure-certificate.md).
 
 ### Phase D — REST and callback gateway
 
