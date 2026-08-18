@@ -12,7 +12,9 @@ The Core exists to make assistants natural, fluent, useful, and grounded in appr
 
 ## Current status
 
-Phase 3 is closed. It delivered the explicit deployment-root model and the first natural, prose-first conversation runtime under the [North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md). The [Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md) records the evidence, scope, and limitations. Durable memory, gateways, learning, tools, and channels remain later phases.
+Phase 3 is closed. It delivered the explicit deployment-root model and the first natural, prose-first conversation runtime under the [North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md). The [Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md) records the evidence, scope, and limitations.
+
+The Core now also provides durable, local, scoped chat continuity. It persists only bounded and redacted recent turns plus explicitly safe chat facts, expires it under deployment-configured retention, and never treats it as approved Knowledge Base evidence. An unreadable or unwritable memory record is observed without replacing natural model-led conversation. Gateways, learning, tools, and channels remain later phases.
 
 The Core contains no tracked active provider lane, model choice, credential, caller, or real Knowledge Base. It supports both an explicit external deployment root and an explicit self-hosted deployment root equal to the clone root. Runtime retrieval and real conversation are available once an administrator supplies and validates local deployment material.
 
@@ -30,5 +32,11 @@ The Core contains no tracked active provider lane, model choice, credential, cal
 3. Supply the assistant identity, purpose, approved knowledge, policies, provider choices, Golden Datasets, and secret references in deployment-owned material.
 4. Validate that deployment against the Core contracts and acceptance gates.
 5. Promote an improvement to Core only when it is genuinely generic, sanitized, tested, and useful across deployments.
+
+To remove expired local chat-memory snapshots explicitly, run:
+
+```text
+node ./bin/admin-memory.js --deployment-root <absolute-deployment-root> cleanup
+```
 
 See [the Core repository charter](docs/architecture/core-repository-charter.md), [the self-hosted deployment design](docs/architecture/phase-4-self-hosted-deployment-mode.md), [the Phase 3 closure certificate](docs/architecture/phase-3-closure-certificate.md), and [the North Star Conversation Quality Standard](docs/architecture/north-star-conversation-quality-standard.md).

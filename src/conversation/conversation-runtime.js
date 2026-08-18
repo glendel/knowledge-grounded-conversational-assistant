@@ -2,6 +2,7 @@ import { createAiCapabilityRuntime } from '../ai/ai-capability-runtime.js';
 import { validateContractInstance } from '../contracts/contract-registry.js';
 import { createOpaqueId } from '../core/ids.js';
 import { FoundationError } from '../core/foundation-error.js';
+import { appendChatMemory, createChatMemoryRepository, loadChatMemory } from '../memory/chat-memory-repository.js';
 import { createApprovedKnowledgeRetriever, retrieveApprovedKnowledge } from './approved-knowledge-retriever.js';
 import { assembleConversationContext } from './context-assembler.js';
 import { normalizeUserMessage } from './message-normalizer.js';
@@ -24,6 +25,7 @@ export function createConversationRuntime({ descriptor, capabilityRuntime = null
     descriptor,
     capability,
     retriever: createApprovedKnowledgeRetriever({ descriptor }),
+    memoryRepository: createChatMemoryRepository({ projectRoot: descriptor.deploymentRoot, configuration: descriptor.configuration, contracts: descriptor.contracts, now }),
     now,
     observe,
     sessions: new Map()
@@ -39,7 +41,16 @@ export async function processConversationTurn(runtime, { conversationId, userId,
     maximumCharacters: runtime.descriptor.configuration.runtime.maxMessageCharacters
   });
   const sessionKey = runtime.descriptor.configuration.assistant.assistantId + '\u0000' + conversationId + '\u0000' + userId;
-  const session = runtime.sessions.get(sessionKey) ?? { turns: [] };
+  let session = runtime.sessions.get(sessionKey);
+  if (!session) {
+    let memory = null;
+    try {
+      memory = await loadChatMemory(runtime.memoryRepository, { assistantId: runtime.descriptor.configuration.assistant.assistantId, conversationId, userId });
+    } catch (error) {
+      runtime.observe({ eventType: 'chat_memory.load_failed', code: error.code ?? 'CHAT_MEMORY_READ_FAILED' });
+    }
+    session = { turns: memory?.recentTurns.map((turn) => ({ role: turn.role, text: turn.text })) ?? [], memory };
+  }
   const evidence = await retrieveApprovedKnowledge(runtime.retriever, { message: normalized.text });
   const context = assembleConversationContext({
     configuration: runtime.descriptor.configuration,
@@ -91,6 +102,17 @@ export async function processConversationTurn(runtime, { conversationId, userId,
   assertContract(runtime.descriptor.contracts, 'runtime-conversation-turn.contract.json', turn);
   session.turns = boundSessionTurns([...session.turns, { role: 'user', text: normalized.text }, { role: 'assistant', text }], runtime.descriptor.configuration.conversationRuntime);
   runtime.sessions.set(sessionKey, session);
+  try {
+    const stored = await appendChatMemory(runtime.memoryRepository, {
+      scope: { assistantId: runtime.descriptor.configuration.assistant.assistantId, conversationId, userId },
+      userTurn: { id: createOpaqueId('memory-user-turn'), text: normalized.text },
+      assistantTurn: { id: turn.turnId, text },
+      knowledgeVersion: evidence.knowledgeVersion
+    });
+    if (stored.persisted) session.memory = stored.snapshot;
+  } catch (error) {
+    runtime.observe({ eventType: 'chat_memory.write_failed', correlationId: turn.turnId, code: error.code ?? 'CHAT_MEMORY_WRITE_FAILED' });
+  }
   runtime.observe({
     eventType: 'conversation.turn.completed',
     correlationId: turn.turnId,

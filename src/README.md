@@ -18,6 +18,8 @@
 
 `src/conversation/` provides approved-only retrieval, bounded context assembly, actual-text language selection, and a single prose-generation conversation loop. It must not read raw knowledge, discover deployment roots, invoke a dialogue tree, or demand JSON from normal user-facing prose.
 
+`src/memory/` provides local, file-backed, chat-scoped continuity. It receives an explicit validated deployment root and validated configuration; it stores only bounded, redacted turns and explicitly safe facts. It must never become factual Knowledge Base evidence, global user profiling, or a reason to replace a natural response when storage is unavailable.
+
 `src/deployment/provider-qualification-records.js` loads deployment-owned provider qualification evidence only from the selected deployment. It must not embed a model, provider lane, or credential in the Core.
 
-Future modules for contracts, configuration, providers, knowledge, conversation, memory, and gateway work must preserve these boundaries. A module that needs deployment-owned files receives an explicit validated deployment-root dependency in a later phase; it must not derive those files from the Core checkout.
+Future modules for contracts, configuration, providers, knowledge, conversation, gateway, and operations work must preserve these boundaries. A module that needs deployment-owned files receives an explicit validated deployment-root dependency; it must not derive those files from the Core checkout.

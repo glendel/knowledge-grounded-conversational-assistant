@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -133,6 +134,51 @@ test('does not leak active-session conversation across user or conversation boun
     await processConversationTurn(runtime, { conversationId: 'conversation-004', userId: 'user-004', message: 'Hello.' });
     assert.equal(requests.length, 2);
     assert.equal(requests[1].messages.some((message) => message.content.includes('First reply.')), false);
+  } finally {
+    await rm(deploymentRoot, { recursive: true, force: true });
+  }
+});
+
+test('hydrates durable chat continuity after a runtime restart without treating it as approved evidence', async () => {
+  const { deploymentRoot, descriptor } = await createEmptyDeployment();
+  const firstRequests = [];
+  const resumedRequests = [];
+  try {
+    const firstRuntime = createConversationRuntime({ descriptor, capabilityRuntime: capability(['Nice to meet you, Alex.'], firstRequests) });
+    await processConversationTurn(firstRuntime, { conversationId: 'conversation-memory', userId: 'user-memory', message: 'My name is Alex.' });
+
+    const resumedRuntime = createConversationRuntime({ descriptor, capabilityRuntime: capability(['Yes, Alex. What would you like to discuss?'], resumedRequests) });
+    const resumed = await processConversationTurn(resumedRuntime, { conversationId: 'conversation-memory', userId: 'user-memory', message: 'Do you remember my name?' });
+
+    assert.equal(resumed.status, 'success');
+    assert.equal(resumed.turn.evidenceState, 'no_evidence');
+    assert.equal(resumed.turn.sourcesAvailable, false);
+    assert.equal(resumedRequests.length, 1);
+    assert.ok(resumedRequests[0].messages.some((entry) => entry.content.includes('My name is Alex.')));
+    assert.doesNotMatch(resumedRequests[0].messages[0].content, /Alex/);
+  } finally {
+    await rm(deploymentRoot, { recursive: true, force: true });
+  }
+});
+
+test('continues naturally when durable memory cannot be read or written', async () => {
+  const { deploymentRoot, descriptor } = await createEmptyDeployment();
+  const observations = [];
+  try {
+    const memoryDirectory = path.join(deploymentRoot, 'app', 'data', 'chat-memory');
+    await mkdir(memoryDirectory, { recursive: true });
+    const scope = { assistantId: 'example-assistant', conversationId: 'conversation-memory-failure', userId: 'user-memory-failure' };
+    const key = createHash('sha256').update(`${scope.assistantId}\u0000${scope.conversationId}\u0000${scope.userId}`).digest('hex');
+    await writeFile(path.join(memoryDirectory, `${key}.json`), '{ invalid JSON', 'utf8');
+    const runtime = createConversationRuntime({
+      descriptor,
+      capabilityRuntime: capability(['I can still help with a question.'], []),
+      observe: (event) => observations.push(event)
+    });
+    const result = await processConversationTurn(runtime, { ...scope, message: 'Hello.' });
+    assert.equal(result.status, 'success');
+    assert.ok(observations.some((event) => event.eventType === 'chat_memory.load_failed'));
+    assert.ok(observations.some((event) => event.eventType === 'chat_memory.write_failed'));
   } finally {
     await rm(deploymentRoot, { recursive: true, force: true });
   }
