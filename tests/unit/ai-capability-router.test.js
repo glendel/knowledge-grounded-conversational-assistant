@@ -21,8 +21,8 @@ function configuredDeterministicRuntime() {
   const configuration = createSyntheticCoreConfiguration();
   configuration.aiProviders.providers.push({ id: 'deterministic-provider', kind: 'deterministic', enabled: true, supportedCapabilities: ['conversation_generation'] });
   configuration.aiProviderLanes.lanes.push(
-    { id: 'primary-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'offline', secretEnv: null, qualificationRecordId: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 },
-    { id: 'fallback-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'offline-fallback', secretEnv: null, qualificationRecordId: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 }
+    { id: 'primary-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'offline', secretEnv: null, qualificationRecordId: null, reasoning: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 },
+    { id: 'fallback-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'offline-fallback', secretEnv: null, qualificationRecordId: null, reasoning: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 }
   );
   configuration.aiCapabilityRoutes.routes.push({ capability: 'conversation_generation', primaryLaneId: 'primary-prose', maxOperationMs: 60000, fallbackLaneIds: ['fallback-prose'] });
   return validateCoreConfiguration(configuration);
@@ -52,8 +52,8 @@ test('capability router rejects internal reasoning and uses the configured fallb
   const configuration = createSyntheticCoreConfiguration();
   configuration.aiProviders.providers.push({ id: 'deterministic-provider', kind: 'deterministic', enabled: true, supportedCapabilities: ['conversation_generation'] });
   configuration.aiProviderLanes.lanes = [
-    { id: 'primary-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'primary', secretEnv: null, qualificationRecordId: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 },
-    { id: 'fallback-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'fallback', secretEnv: null, qualificationRecordId: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 }
+    { id: 'primary-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'primary', secretEnv: null, qualificationRecordId: null, reasoning: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 },
+    { id: 'fallback-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'fallback', secretEnv: null, qualificationRecordId: null, reasoning: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 }
   ];
   configuration.aiCapabilityRoutes.routes.push({ capability: 'conversation_generation', primaryLaneId: 'primary-prose', maxOperationMs: 60000, fallbackLaneIds: ['fallback-prose'] });
   const observations = [];
@@ -76,7 +76,7 @@ test('capability router rejects internal reasoning and uses the configured fallb
 test('network lanes do not execute without matching approved qualification evidence', async () => {
   const configuration = createSyntheticCoreConfiguration();
   configuration.aiProviders.providers.push({ id: 'network-provider', kind: 'openrouter', enabled: true, supportedCapabilities: ['conversation_generation'] });
-  configuration.aiProviderLanes.lanes.push({ id: 'qualified-network', capability: 'conversation_generation', providerId: 'network-provider', model: 'configured-later', secretEnv: 'EXAMPLE_PROVIDER_KEY', qualificationRecordId: 'qualification-01', geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 });
+  configuration.aiProviderLanes.lanes.push({ id: 'qualified-network', capability: 'conversation_generation', providerId: 'network-provider', model: 'configured-later', secretEnv: 'EXAMPLE_PROVIDER_KEY', qualificationRecordId: 'qualification-01', reasoning: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 });
   configuration.aiCapabilityRoutes.routes.push({ capability: 'conversation_generation', primaryLaneId: 'qualified-network', maxOperationMs: 60000, fallbackLaneIds: [] });
   const router = createCapabilityRouter({ configuration: validateCoreConfiguration(configuration), contracts: await contracts(), now, environment: { EXAMPLE_PROVIDER_KEY: 'synthetic-secret' }, adapters: { openrouter: async () => ({ text: 'Must not run.' }) } });
   const outcome = await router.execute(request);

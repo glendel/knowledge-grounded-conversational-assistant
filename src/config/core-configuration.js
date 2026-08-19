@@ -204,7 +204,7 @@ function validateAiProviderLanes(configuration, providers) {
   const providerById = new Map(providers.map((provider) => [provider.id, provider]));
   const ids = new Set();
   for (const lane of configuration.lanes) {
-    assertExactKeys(lane, ['id', 'capability', 'providerId', 'model', 'secretEnv', 'qualificationRecordId', 'geminiThinkingLevel', 'enabled', 'timeoutMs', 'maxInputCharacters', 'maxOutputCharacters', 'maxAttempts', 'retryBackoffMs'], `${label}.lanes[]`);
+    assertExactKeys(lane, ['id', 'capability', 'providerId', 'model', 'secretEnv', 'qualificationRecordId', 'reasoning', 'geminiThinkingLevel', 'enabled', 'timeoutMs', 'maxInputCharacters', 'maxOutputCharacters', 'maxAttempts', 'retryBackoffMs'], `${label}.lanes[]`);
     assertString(lane.id, `${label}.lanes[].id`, { pattern: /^[a-z][a-z0-9-]{2,63}$/, max: 64 });
     if (ids.has(lane.id)) throw new FoundationError(`${label} has duplicate lane ID ${lane.id}.`, { path: label });
     ids.add(lane.id);
@@ -219,6 +219,13 @@ function validateAiProviderLanes(configuration, providers) {
       assertString(lane.secretEnv, `${label}.lanes[].secretEnv`, { pattern: /^[A-Z][A-Z0-9_]{2,127}$/, max: 128 });
     }
     if (lane.qualificationRecordId !== null) assertString(lane.qualificationRecordId, `${label}.lanes[].qualificationRecordId`, { pattern: /^[a-z][a-z0-9-]{2,127}$/, max: 128 });
+    if (lane.reasoning !== null) {
+      assertExactKeys(lane.reasoning, ['effort', 'exclude'], `${label}.lanes[].reasoning`);
+      if (!['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'].includes(lane.reasoning.effort) || typeof lane.reasoning.exclude !== 'boolean') {
+        throw new FoundationError(`${label}.lanes[].reasoning is invalid.`, { path: label });
+      }
+      if (provider.kind !== 'openrouter') throw new FoundationError(`${label}.lanes[].reasoning is only supported by OpenRouter lanes.`, { path: label });
+    }
     if (lane.geminiThinkingLevel !== null && !['minimal', 'low', 'medium', 'high'].includes(lane.geminiThinkingLevel)) throw new FoundationError(`${label}.lanes[].geminiThinkingLevel is invalid.`, { path: label });
     if (lane.geminiThinkingLevel !== null && provider.kind !== 'google_gemini') throw new FoundationError(`${label}.lanes[].geminiThinkingLevel is only valid for Google Gemini lanes.`, { path: label });
     if (typeof lane.enabled !== 'boolean') throw new FoundationError(`${label}.lanes[].enabled must be boolean.`, { path: label });

@@ -23,7 +23,7 @@ test('loads and freezes an explicitly supplied synthetic configuration directory
 test('rejects a network lane without qualification evidence and a weakened knowledge policy', () => {
   const missingQualification = createSyntheticCoreConfiguration();
   missingQualification.aiProviders.providers.push({ id: 'network-provider', kind: 'openrouter', enabled: true, supportedCapabilities: ['conversation_generation'] });
-  missingQualification.aiProviderLanes.lanes.push({ id: 'network-lane', capability: 'conversation_generation', providerId: 'network-provider', model: 'configured-later', secretEnv: 'EXAMPLE_PROVIDER_KEY', qualificationRecordId: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 });
+  missingQualification.aiProviderLanes.lanes.push({ id: 'network-lane', capability: 'conversation_generation', providerId: 'network-provider', model: 'configured-later', secretEnv: 'EXAMPLE_PROVIDER_KEY', qualificationRecordId: null, reasoning: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 });
   assert.throws(() => validateCoreConfiguration(missingQualification), /required for enabled network lanes/);
 
   const weakenedKnowledgePolicy = createSyntheticCoreConfiguration();

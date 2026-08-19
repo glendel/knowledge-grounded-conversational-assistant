@@ -60,10 +60,18 @@ async function postJson({ url, headers, body, timeoutMs, fetchImpl }) {
   return payload;
 }
 
-function generationOptions(request, provider) {
+const REASONING_RATIOS = Object.freeze({ minimal: 0.1, low: 0.2, medium: 0.5, high: 0.8, xhigh: 0.95, max: 0.95 });
+
+function generationOptions(request, provider, lane = {}) {
   const options = {};
   if (request.generation.temperature !== null) options.temperature = request.generation.temperature;
-  if (provider === 'openrouter') options.max_tokens = Math.ceil(request.generation.maxOutputCharacters / 4);
+  if (provider === 'openrouter') {
+    const finalOutputTokens = Math.ceil(request.generation.maxOutputCharacters / 4);
+    const effort = lane.reasoning?.effort;
+    const ratio = REASONING_RATIOS[effort] ?? 0;
+    options.max_tokens = ratio > 0 ? Math.max(finalOutputTokens + 1024, Math.ceil(finalOutputTokens / (1 - ratio))) : finalOutputTokens;
+    if (lane.reasoning !== null && lane.reasoning !== undefined) options.reasoning = lane.reasoning;
+  }
   if (provider === 'ollama') options.num_predict = Math.ceil(request.generation.maxOutputCharacters / 4);
   if (provider === 'gemini') options.maxOutputTokens = Math.min(8192, Math.max(256, Math.ceil(request.generation.maxOutputCharacters / 4) + 256));
   return options;
@@ -73,7 +81,7 @@ export async function generateOpenRouterProse({ request, lane, secret, fetchImpl
   const payload = await postJson({
     url: OPENROUTER_URL,
     headers: { authorization: `Bearer ${secret}` },
-    body: { model: lane.model, messages: request.messages, stream: false, ...generationOptions(request, 'openrouter') },
+    body: { model: lane.model, messages: request.messages, stream: false, ...generationOptions(request, 'openrouter', lane) },
     timeoutMs: lane.timeoutMs,
     fetchImpl
   });

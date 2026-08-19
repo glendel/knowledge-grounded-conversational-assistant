@@ -12,6 +12,15 @@
     "model": { "type": "string", "minLength": 1, "maxLength": 200 },
     "secretEnv": { "type": ["string", "null"], "pattern": "^[A-Z][A-Z0-9_]{2,127}$" },
     "qualificationRecordId": { "type": ["string", "null"], "pattern": "^[a-z][a-z0-9-]{2,127}$" },
+    "reasoning": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "effort": { "type": "string", "enum": ["none", "minimal", "low", "medium", "high", "xhigh", "max"] },
+        "exclude": { "type": "boolean" }
+      },
+      "required": ["effort", "exclude"]
+    },
     "geminiThinkingLevel": { "type": ["string", "null"], "enum": ["minimal", "low", "medium", "high", null] },
     "enabled": { "type": "boolean" },
     "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 300000 },
@@ -20,5 +29,5 @@
     "maxAttempts": { "type": "integer", "minimum": 1, "maximum": 3 },
     "retryBackoffMs": { "type": "integer", "minimum": 0, "maximum": 30000 }
   },
-  "required": ["schemaVersion", "id", "capability", "providerId", "model", "secretEnv", "qualificationRecordId", "geminiThinkingLevel", "enabled", "timeoutMs", "maxInputCharacters", "maxOutputCharacters", "maxAttempts", "retryBackoffMs"]
+  "required": ["schemaVersion", "id", "capability", "providerId", "model", "secretEnv", "qualificationRecordId", "reasoning", "geminiThinkingLevel", "enabled", "timeoutMs", "maxInputCharacters", "maxOutputCharacters", "maxAttempts", "retryBackoffMs"]
 }

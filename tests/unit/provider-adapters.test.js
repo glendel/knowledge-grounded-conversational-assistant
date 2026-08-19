@@ -18,6 +18,14 @@ test('OpenRouter adapter requests and returns normal prose without a response-fo
   assert.equal(body.stream, false);
 });
 
+test('OpenRouter adapter can request hidden high-effort reasoning while preserving final prose capacity', async () => {
+  let captured;
+  await generateOpenRouterProse({ request, lane: { ...lane, reasoning: { effort: 'high', exclude: true } }, secret: 'secret', fetchImpl: async (_url, options) => { captured = options; return jsonResponse({ choices: [{ message: { content: 'Respuesta fundamentada.' }, finish_reason: 'stop' }] }); } });
+  const body = JSON.parse(captured.body);
+  assert.deepEqual(body.reasoning, { effort: 'high', exclude: true });
+  assert.ok(body.max_tokens >= 1174, 'high reasoning reserves capacity for both reasoning and final prose');
+});
+
 test('Ollama Cloud adapter uses the normal chat response content', async () => {
   const result = await generateOllamaCloudProse({ request, lane, secret: 'secret', fetchImpl: async (_url, options) => { const body = JSON.parse(options.body); assert.equal(body.stream, false); assert.equal(body.format, undefined); return jsonResponse({ message: { content: 'Normal prose.' }, done_reason: 'stop', prompt_eval_count: 2, eval_count: 3 }); } });
   assert.equal(result.text, 'Normal prose.');

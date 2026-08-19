@@ -36,6 +36,10 @@ Provider qualification records belong to the selected deployment at:
 
 They are validated before a network lane can generate prose. The Core does not choose a model, route, credential, or qualification record.
 
+### OpenRouter reasoning
+
+An OpenRouter lane may set `reasoning` to `{ "effort": "high", "exclude": true }`. The Core sends that setting to OpenRouter and reserves enough output capacity for both private reasoning and normal user-facing prose. `exclude` must remain `true` for conversational deployments: internal reasoning is never shown to an end user. Reasoning strength is a deployment choice and requires fresh provider qualification and conversational acceptance evidence before it becomes an active route.
+
 ## Deployment-owned acceptance dataset
 
 Create an external JSON dataset with this shape:
