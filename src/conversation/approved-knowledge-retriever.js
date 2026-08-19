@@ -36,10 +36,12 @@ export async function retrieveApprovedKnowledge(retriever, { message } = {}) {
     .filter((candidate) => candidate && candidate.score > 0)
     .sort((left, right) => right.score - left.score || left.record.id.localeCompare(right.record.id));
 
-  const strongest = scored[0]?.score ?? 0;
-  const eligible = scored
-    .filter((candidate) => candidate.score * 2 >= strongest)
-    .slice(0, retriever.descriptor.configuration.conversationRuntime.maxEvidenceDocuments);
+  const eligible = selectDiverseCandidates(
+    scored,
+    queryTerms,
+    termWeights,
+    retriever.descriptor.configuration.conversationRuntime.maxEvidenceDocuments
+  );
   const candidates = selectEvidence(eligible, message, retriever.descriptor.configuration.conversationRuntime.maxEvidenceCharacters);
   return Object.freeze({
     status: candidates.length > 0 ? 'evidence' : 'no_evidence',
@@ -131,6 +133,10 @@ function candidateDocumentIds(lexicalIndex, terms) {
 }
 
 function relevance(record, terms, termWeights) {
+  return terms.reduce((score, term) => score + termRelevance(record, term, termWeights), 0);
+}
+
+function termRelevance(record, term, termWeights) {
   const fields = [
     { text: record.title, weight: 12 },
     { text: record.topics.join(' '), weight: 10 },
@@ -138,10 +144,37 @@ function relevance(record, terms, termWeights) {
     { text: record.retrievalTerms.join(' '), weight: 4 },
     { text: record.claims.map((claim) => claim.text).join(' '), weight: 1 }
   ].map((field) => ({ ...field, terms: new Set(meaningfulTerms(field.text)) }));
-  return terms.reduce((score, term) => {
-    const strongestFieldWeight = Math.max(0, ...fields.filter((field) => field.terms.has(term)).map((field) => field.weight));
-    return score + strongestFieldWeight * (termWeights.get(term) ?? 1);
-  }, 0);
+  const strongestFieldWeight = Math.max(0, ...fields.filter((field) => field.terms.has(term)).map((field) => field.weight));
+  return strongestFieldWeight * (termWeights.get(term) ?? 1);
+}
+
+function selectDiverseCandidates(scored, queryTerms, termWeights, maximumDocuments) {
+  if (scored.length === 0 || maximumDocuments <= 0) return [];
+
+  const remaining = [...scored];
+  const selected = [remaining.shift()];
+  const coveredTerms = new Set(matchedTerms(selected[0].record, queryTerms));
+
+  while (selected.length < maximumDocuments && remaining.length > 0) {
+    const next = remaining
+      .map((candidate) => ({
+        candidate,
+        uncoveredScore: matchedTerms(candidate.record, queryTerms)
+          .filter((term) => !coveredTerms.has(term))
+          .reduce((score, term) => score + termRelevance(candidate.record, term, termWeights), 0)
+      }))
+      .sort((left, right) => right.uncoveredScore - left.uncoveredScore || right.candidate.score - left.candidate.score || left.candidate.record.id.localeCompare(right.candidate.record.id))[0];
+    selected.push(next.candidate);
+    for (const term of matchedTerms(next.candidate.record, queryTerms)) coveredTerms.add(term);
+    remaining.splice(remaining.indexOf(next.candidate), 1);
+  }
+  return selected;
+}
+
+function matchedTerms(record, terms) {
+  const fields = [record.title, ...record.topics, ...record.tags, ...record.retrievalTerms, ...record.claims.map((claim) => claim.text)];
+  const recordTerms = new Set(meaningfulTerms(fields.join(' ')));
+  return terms.filter((term) => recordTerms.has(term));
 }
 
 function createTermWeights(lexicalIndex, terms, documentCount) {

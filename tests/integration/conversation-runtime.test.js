@@ -125,6 +125,47 @@ test('prioritizes a rare product name over broad category matches', async () => 
   }
 });
 
+test('retains evidence for a secondary request topic in a mixed conversational turn', async () => {
+  const { deploymentRoot, descriptor } = await createApprovedDeployment();
+  const requests = [];
+  try {
+    const administration = await createKnowledgeAdministration({ deploymentRoot, configuration: descriptor.configuration, contracts: descriptor.contracts, now: () => '2026-08-17T00:00:00.000Z' });
+    const registry = JSON.parse(await readFile(path.join(deploymentRoot, 'app', 'knowledge', 'registry.json'), 'utf8'));
+    const sourceId = registry.activeSourceIds[0];
+    const documents = [
+      { id: 'knowledge_costena', title: 'Costeña con papas', terms: ['costena', 'papas'], claim: 'COSTENA CON PAPAS cuesta 24.900 COP.' },
+      { id: 'knowledge_chilli', title: 'Chilli con papas', terms: ['chilli', 'papas'], claim: 'CHILLI CON PAPAS cuesta 24.500 COP.' },
+      { id: 'knowledge_bebidas', title: 'Bebidas para hamburguesas', terms: ['bebida', 'recomiendas', 'hamburguesas'], claim: 'Para acompañar hamburguesas, puedes ofrecer Agua 600 ml por 3.900 COP o Gaseosa 1.5 L por 9.000 COP.' }
+    ];
+    for (const document of documents) {
+      await createDraft(administration, { sourceId, documentId: document.id, title: document.title, language: 'es', aiAdministrator: 'synthetic-ai-administrator' });
+      const recordPath = path.join(deploymentRoot, 'app', 'knowledge', 'drafts', document.id, 'record.json');
+      const record = JSON.parse(await readFile(recordPath, 'utf8'));
+      record.tags = document.terms;
+      record.topics = document.terms;
+      record.retrievalTerms = document.terms;
+      record.claims[0].text = document.claim;
+      record.review = { ...record.review, privacyReviewed: true, freshnessReviewed: true, authorityReviewed: true };
+      await writeFile(recordPath, JSON.stringify(record, null, 2) + '\n', 'utf8');
+      await writeFile(path.join(deploymentRoot, 'app', 'knowledge', 'drafts', document.id, 'document.md'), `# ${document.title}\n\n${document.claim}\n`, 'utf8');
+      await approveDraft(administration, { documentId: document.id, approvedBy: 'human-admin', declaration: 'HUMAN_APPROVAL_CONFIRMED' });
+    }
+    await buildIndexes(administration);
+    const refreshed = await createDeploymentDescriptor({ coreRoot: CORE_ROOT, deploymentRoot });
+    const runtime = createConversationRuntime({ descriptor: refreshed, capabilityRuntime: capability(['Claro, te recomiendo una bebida disponible.'], requests) });
+    await processConversationTurn(runtime, {
+      conversationId: 'conversation-mixed-topics',
+      userId: 'user-mixed-topics',
+      message: 'Voy a pedir COSTENA CON PAPAS y CHILLI CON PAPAS. Que bebida me recomiendas?'
+    });
+    assert.match(requests[0].messages[0].content, /COSTENA CON PAPAS cuesta 24.900 COP/);
+    assert.match(requests[0].messages[0].content, /CHILLI CON PAPAS cuesta 24.500 COP/);
+    assert.match(requests[0].messages[0].content, /Agua 600 ml por 3.900 COP/);
+  } finally {
+    await rm(deploymentRoot, { recursive: true, force: true });
+  }
+});
+
 test('continues ordinary conversation naturally when no approved index exists yet', async () => {
   const { deploymentRoot, descriptor } = await createEmptyDeployment();
   const requests = [];
