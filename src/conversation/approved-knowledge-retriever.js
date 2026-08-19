@@ -27,10 +27,11 @@ export async function retrieveApprovedKnowledge(retriever, { message } = {}) {
 
   const queryTerms = meaningfulTerms(message);
   const candidateIds = candidateDocumentIds(source.lexicalIndex, queryTerms);
+  const termWeights = createTermWeights(source.lexicalIndex, queryTerms, source.records.size);
   const scored = candidateIds
     .map((documentId) => {
       const record = source.records.get(documentId);
-      return record ? { record, score: relevance(record, queryTerms) } : null;
+      return record ? { record, score: relevance(record, queryTerms, termWeights) } : null;
     })
     .filter((candidate) => candidate && candidate.score > 0)
     .sort((left, right) => right.score - left.score || left.record.id.localeCompare(right.record.id));
@@ -129,17 +130,26 @@ function candidateDocumentIds(lexicalIndex, terms) {
   return [...new Set(terms.flatMap((term) => lexicalIndex.terms[term] ?? []))].sort();
 }
 
-function relevance(record, terms) {
-  return overlap(record.title, terms) * 12
-    + overlap(record.topics.join(' '), terms) * 10
-    + overlap(record.tags.join(' '), terms) * 6
-    + overlap(record.retrievalTerms.join(' '), terms) * 4
-    + overlap(record.claims.map((claim) => claim.text).join(' '), terms);
+function relevance(record, terms, termWeights) {
+  const fields = [
+    { text: record.title, weight: 12 },
+    { text: record.topics.join(' '), weight: 10 },
+    { text: record.tags.join(' '), weight: 6 },
+    { text: record.retrievalTerms.join(' '), weight: 4 },
+    { text: record.claims.map((claim) => claim.text).join(' '), weight: 1 }
+  ].map((field) => ({ ...field, terms: new Set(meaningfulTerms(field.text)) }));
+  return terms.reduce((score, term) => {
+    const strongestFieldWeight = Math.max(0, ...fields.filter((field) => field.terms.has(term)).map((field) => field.weight));
+    return score + strongestFieldWeight * (termWeights.get(term) ?? 1);
+  }, 0);
 }
 
-function overlap(text, terms) {
-  const values = new Set(meaningfulTerms(text));
-  return terms.filter((term) => values.has(term)).length;
+function createTermWeights(lexicalIndex, terms, documentCount) {
+  const total = Math.max(1, documentCount);
+  return new Map(terms.map((term) => {
+    const frequency = lexicalIndex.terms[term]?.length ?? 0;
+    return [term, 1 + Math.log((total + 1) / (frequency + 1))];
+  }));
 }
 
 function tokenize(value) {

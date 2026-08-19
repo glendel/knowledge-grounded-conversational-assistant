@@ -83,6 +83,48 @@ test('uses approved evidence in a single natural prose call and keeps source mat
   }
 });
 
+test('prioritizes a rare product name over broad category matches', async () => {
+  const { deploymentRoot, descriptor } = await createApprovedDeployment();
+  const requests = [];
+  try {
+    const administration = await createKnowledgeAdministration({ deploymentRoot, configuration: descriptor.configuration, contracts: descriptor.contracts, now: () => '2026-08-17T00:00:00.000Z' });
+    const registry = JSON.parse(await readFile(path.join(deploymentRoot, 'app', 'knowledge', 'registry.json'), 'utf8'));
+    const sourceId = registry.activeSourceIds[0];
+    for (let index = 1; index <= 5; index += 1) {
+      const documentId = `knowledge_burger-papas-${index}`;
+      await createDraft(administration, { sourceId, documentId, title: `Hamburguesas con papas ${index}`, language: 'es' });
+      const recordPath = path.join(deploymentRoot, 'app', 'knowledge', 'drafts', documentId, 'record.json');
+      const record = JSON.parse(await readFile(recordPath, 'utf8'));
+      record.tags = ['hamburguesas', 'papas'];
+      record.topics = ['hamburguesas con papas'];
+      record.retrievalTerms = ['hamburguesas', 'papas'];
+      record.claims[0].text = `Hamburguesa genérica con papas ${index}.`;
+      record.review = { ...record.review, privacyReviewed: true, freshnessReviewed: true, authorityReviewed: true };
+      await writeFile(recordPath, JSON.stringify(record, null, 2) + '\n', 'utf8');
+      await writeFile(path.join(deploymentRoot, 'app', 'knowledge', 'drafts', documentId, 'document.md'), `# Hamburguesas con papas ${index}\n\nHamburguesa genérica con papas ${index}.\n`, 'utf8');
+      await approveDraft(administration, { documentId, approvedBy: 'human-admin', declaration: 'HUMAN_APPROVAL_CONFIRMED' });
+    }
+    await createDraft(administration, { sourceId, documentId: 'knowledge_hamburgesas-especiales-x2', title: 'HAMBURGESAS ESPECIALES X 2', language: 'es' });
+    const targetPath = path.join(deploymentRoot, 'app', 'knowledge', 'drafts', 'knowledge_hamburgesas-especiales-x2', 'record.json');
+    const target = JSON.parse(await readFile(targetPath, 'utf8'));
+    target.tags = ['hamburguesas', 'combos'];
+    target.topics = ['producto especial'];
+    target.retrievalTerms = ['hamburgesas especiales x 2', 'hamburguesas especiales x2'];
+    target.claims[0].text = 'HAMBURGESAS ESPECIALES X 2: el catálogo no declara que incluya papas.';
+    target.review = { ...target.review, privacyReviewed: true, freshnessReviewed: true, authorityReviewed: true };
+    await writeFile(targetPath, JSON.stringify(target, null, 2) + '\n', 'utf8');
+    await writeFile(path.join(deploymentRoot, 'app', 'knowledge', 'drafts', 'knowledge_hamburgesas-especiales-x2', 'document.md'), '# HAMBURGESAS ESPECIALES X 2\n\nHAMBURGESAS ESPECIALES X 2: el catálogo no declara que incluya papas.\n', 'utf8');
+    await approveDraft(administration, { documentId: 'knowledge_hamburgesas-especiales-x2', approvedBy: 'human-admin', declaration: 'HUMAN_APPROVAL_CONFIRMED' });
+    await buildIndexes(administration);
+    const refreshed = await createDeploymentDescriptor({ coreRoot: CORE_ROOT, deploymentRoot });
+    const runtime = createConversationRuntime({ descriptor: refreshed, capabilityRuntime: capability(['El catálogo no confirma papas.'], requests) });
+    await processConversationTurn(runtime, { conversationId: 'conversation-ranked', userId: 'user-ranked', message: '¿Las hamburguesas especiales x2 incluyen papas?' });
+    assert.match(requests[0].messages[0].content, /HAMBURGESAS ESPECIALES X 2: el catálogo no declara que incluya papas/);
+  } finally {
+    await rm(deploymentRoot, { recursive: true, force: true });
+  }
+});
+
 test('continues ordinary conversation naturally when no approved index exists yet', async () => {
   const { deploymentRoot, descriptor } = await createEmptyDeployment();
   const requests = [];
