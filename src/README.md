@@ -10,7 +10,7 @@
 
 `src/config/` validates a configuration directory explicitly supplied by a caller. It does not discover a configuration directory from the Core checkout.
 
-`src/ai/` contains prose-first provider transport adapters, capability routing, and qualification validation. It accepts injected configuration, contracts, qualification evidence, and environment secrets; it must not embed a live provider route, model, or credential.
+`src/ai/` contains prose-first provider transport adapters, capability routing, output-boundary protection, and qualification validation. It accepts injected configuration, contracts, qualification evidence, and environment secrets; it must not embed a live provider route, model, or credential. A provider output that exposes internal reasoning is an invalid response and may move to a configured fallback lane; it is never user-visible prose.
 
 `src/knowledge/` contains the administration lifecycle only: source discovery, controlled extraction, redaction, drafting, review, explicit Human Administrator approval, approved-only indexing, and retrieval evaluation. It accepts an explicit deployment root, validated configuration, and loaded contracts. It must never discover a deployment from the Core checkout or expose raw sources or drafts to a runtime.
 

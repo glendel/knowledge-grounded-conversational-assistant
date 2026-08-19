@@ -48,6 +48,31 @@ test('capability router preserves normal prose and uses a configured fallback af
   assert.equal(outcome.result.text, 'Claro. Cuéntame qué necesitas y lo revisamos paso a paso.');
 });
 
+test('capability router rejects internal reasoning and uses the configured fallback prose lane', async () => {
+  const configuration = createSyntheticCoreConfiguration();
+  configuration.aiProviders.providers.push({ id: 'deterministic-provider', kind: 'deterministic', enabled: true, supportedCapabilities: ['conversation_generation'] });
+  configuration.aiProviderLanes.lanes = [
+    { id: 'primary-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'primary', secretEnv: null, qualificationRecordId: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 },
+    { id: 'fallback-prose', capability: 'conversation_generation', providerId: 'deterministic-provider', model: 'fallback', secretEnv: null, qualificationRecordId: null, geminiThinkingLevel: null, enabled: true, timeoutMs: 30000, maxInputCharacters: 5000, maxOutputCharacters: 1000, maxAttempts: 1, retryBackoffMs: 0 }
+  ];
+  configuration.aiCapabilityRoutes.routes.push({ capability: 'conversation_generation', primaryLaneId: 'primary-prose', maxOperationMs: 60000, fallbackLaneIds: ['fallback-prose'] });
+  const observations = [];
+  const runtime = createAiCapabilityRuntime({
+    configuration: validateCoreConfiguration(configuration),
+    contracts: await contracts(),
+    observe: (event) => observations.push(event),
+    adapters: {
+      deterministic: async ({ lane }) => lane.id === 'primary-prose'
+        ? { text: 'Okay, the user is asking for a plan. Let me analyze the request.', finishReason: 'stop', usage: null }
+        : { text: 'Claro. Puedo ayudarte con esa pregunta.', finishReason: 'stop', usage: null }
+    }
+  });
+  const outcome = await runtime.execute(request);
+  assert.equal(outcome.status, 'success');
+  assert.equal(outcome.result.laneId, 'fallback-prose');
+  assert.ok(observations.some((event) => event.eventType === 'ai.prose.failed' && event.code === 'PROVIDER_INTERNAL_REASONING'));
+});
+
 test('network lanes do not execute without matching approved qualification evidence', async () => {
   const configuration = createSyntheticCoreConfiguration();
   configuration.aiProviders.providers.push({ id: 'network-provider', kind: 'openrouter', enabled: true, supportedCapabilities: ['conversation_generation'] });

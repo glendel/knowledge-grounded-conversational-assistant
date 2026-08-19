@@ -211,6 +211,19 @@ test('rejects model-style internal request narration instead of showing it to a 
   }
 });
 
+test('rejects an internal planning trace even when it has a conversational lead-in', async () => {
+  const { deploymentRoot, descriptor } = await createEmptyDeployment();
+  try {
+    const runtime = createConversationRuntime({ descriptor, capabilityRuntime: capability(['Okay, the user is asking about products. Let me check the approved evidence and plan the response.'], []) });
+    await assert.rejects(
+      () => processConversationTurn(runtime, { conversationId: 'conversation-008', userId: 'user-008', message: 'Hello.' }),
+      (error) => error?.code === 'RUNTIME_PROSE_BOUNDARY_REJECTED'
+    );
+  } finally {
+    await rm(deploymentRoot, { recursive: true, force: true });
+  }
+});
+
 test('fails closed when an approved record changes after its index was built', async () => {
   const { deploymentRoot, descriptor } = await createApprovedDeployment();
   try {

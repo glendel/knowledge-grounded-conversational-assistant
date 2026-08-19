@@ -2,6 +2,7 @@ import { FoundationError } from '../core/foundation-error.js';
 import { validateContractInstance } from '../contracts/contract-registry.js';
 import { ProviderTransportError, builtInProviderAdapters } from './provider-adapters.js';
 import { isLaneQualified } from './model-qualification.js';
+import { isInternalReasoning } from './prose-output-guard.js';
 
 const CAPABILITY = 'conversation_generation';
 
@@ -68,6 +69,7 @@ export function createCapabilityRouter({ configuration, contracts, adapters = bu
           if (now().getTime() > operationDeadline) throw new ProviderTransportError('Provider request exceeded the operation deadline.', { code: 'AI_OPERATION_DEADLINE_EXCEEDED', category: 'timeout', retryable: false });
           if (!generated || typeof generated.text !== 'string' || generated.text.trim().length === 0) throw new ProviderTransportError('Provider response did not contain normal prose.', { code: 'PROVIDER_INVALID_RESPONSE', category: 'invalid_response', retryable: false });
           if (generated.text.length > request.generation.maxOutputCharacters || generated.text.length > lane.maxOutputCharacters) throw new ProviderTransportError('Provider prose exceeded configured bounds.', { code: 'PROVIDER_OUTPUT_TOO_LARGE', category: 'invalid_response', retryable: false });
+          if (isInternalReasoning(generated.text)) throw new ProviderTransportError('Provider response contained internal reasoning rather than user-facing prose.', { code: 'PROVIDER_INTERNAL_REASONING', category: 'invalid_response', retryable: true });
           const result = Object.freeze({ schemaVersion: 1, requestId: request.requestId, laneId: lane.id, providerId: provider.id, model: lane.model, text: generated.text, finishReason: generated.finishReason ?? null, usage: generated.usage ?? null, completedAt: isoNow(now) });
           contractAssertion(contracts, 'prose-generation-result.contract.json', result);
           observe({ eventType: 'ai.prose.completed', laneId: lane.id, providerId: provider.id, model: lane.model, attempt });

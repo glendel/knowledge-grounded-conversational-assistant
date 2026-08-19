@@ -6,6 +6,7 @@ import { appendChatMemory, createChatMemoryRepository, loadChatMemory } from '..
 import { createApprovedKnowledgeRetriever, retrieveApprovedKnowledge } from './approved-knowledge-retriever.js';
 import { assembleConversationContext } from './context-assembler.js';
 import { normalizeUserMessage } from './message-normalizer.js';
+import { isInternalReasoning } from '../ai/prose-output-guard.js';
 
 export function createConversationRuntime({ descriptor, capabilityRuntime = null, qualificationRecords = [], environment = process.env, fetchImpl = globalThis.fetch, now = () => new Date(), observe = () => {} } = {}) {
   if (!descriptor?.configuration || !descriptor?.contracts) throw new TypeError('A validated deployment descriptor is required.');
@@ -150,7 +151,7 @@ function validateVisibleProse(value, maximumCharacters) {
   if (/\[REDACTED_[A-Z_]+\]/u.test(text) || /(?:[a-z]:\\|\/app\/knowledge\/|\/config\/)/iu.test(text)) {
     throw new FoundationError('Generated prose exposed an internal persistence marker or path.', { code: 'RUNTIME_PROSE_BOUNDARY_REJECTED' });
   }
-  if (/^(?:the user|el usuario)\s+(?:is asking|asks|wants|esta preguntando|pregunta|quiere)\b/iu.test(text)) {
+  if (isInternalReasoning(text)) {
     throw new FoundationError('Generated prose exposed internal request narration.', { code: 'RUNTIME_PROSE_BOUNDARY_REJECTED' });
   }
   return text;
