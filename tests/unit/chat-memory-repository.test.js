@@ -58,6 +58,20 @@ test('omits whole sensitive turns, including facts and assistant echoes', async 
   }
 });
 
+test('retains ordinary credential instructions while still omitting a supplied credential value', async () => {
+  const { root, repository } = await fixtureRepository({ now: () => new Date('2026-08-08T12:00:00.000Z') });
+  const scope = { assistantId: 'example-assistant', conversationId: 'conversation-05', userId: 'user-01' };
+  try {
+    await appendChatMemory(repository, { scope, userTurn: { id: 'memory-user-51', text: 'How do I sign in?' }, assistantTurn: { id: 'turn-51', text: 'Enter your user name and the contraseña corresponding to that user.' } });
+    await appendChatMemory(repository, { scope, userTurn: { id: 'memory-user-52', text: 'Mi contraseña es secret-value.' }, assistantTurn: { id: 'turn-52', text: 'I cannot retain that value.' } });
+    const snapshot = await loadChatMemory(repository, scope);
+    assert.equal(snapshot.recentTurns.some((turn) => turn.text.includes('contraseña corresponding')), true);
+    assert.equal(snapshot.recentTurns.some((turn) => turn.text.includes('secret-value')), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test('expires and explicitly cleans up expired local memory', async () => {
   let current = new Date('2026-08-08T12:00:00.000Z');
   const { root, repository } = await fixtureRepository({ now: () => current });

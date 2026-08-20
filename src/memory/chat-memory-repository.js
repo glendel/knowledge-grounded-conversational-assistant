@@ -15,15 +15,16 @@ function memoryKey({ assistantId, conversationId, userId }) { return createHash(
 function iso(now) { return now().toISOString(); }
 function expiresAt(now, retentionDays) { return new Date(now().getTime() + (retentionDays * 86_400_000)).toISOString(); }
 function truncate(text, maximum) { return String(text).trim().slice(0, maximum); }
+const CREDENTIAL_ASSIGNMENT = String.raw`(?:\s*(?::|=)\s*|\s+(?:is|es)\s+)\S+`;
 function containsSensitiveMemoryData(value) {
   const text = String(value);
-  return /\b(?:bearer\s+)?(?:sk|AIza)[A-Za-z0-9_-]{16,}\b|\b(?:api[_ -]?key|token|password|contrase(?:\u00f1|n)a|one[- ]?time code|(?:verification|authentication) code|otp|(?:c\u00f3|co)digo(?:\s+de)?\s+(?:verificaci\u00f3n|autenticaci\u00f3n))\s*[:=]?\s*\S+|\b(?:card|tarjeta|cvv|cvc)\s*[:=]?\s*\S+|\b\d(?:[ -]?\d){12,18}\b|\b[a-f0-9]{32,}\b/iu.test(text);
+  return new RegExp(String.raw`\b(?:bearer\s+)?(?:sk|AIza)[A-Za-z0-9_-]{16,}\b|\b(?:api[_ -]?key|token|password|contrase(?:\u00f1|n)a|one[- ]?time code|(?:verification|authentication) code|otp|(?:c\u00f3|co)digo(?:\s+de)?\s+(?:verificaci\u00f3n|autenticaci\u00f3n))${CREDENTIAL_ASSIGNMENT}|\b(?:card|tarjeta|cvv|cvc)${CREDENTIAL_ASSIGNMENT}|\b\d(?:[ -]?\d){12,18}\b|\b[a-f0-9]{32,}\b`, 'iu').test(text);
 }
 
 export function sanitizeMemoryText(value, maximum) {
   const text = String(value);
   if (containsSensitiveMemoryData(text)) return '';
-  if (/\b(?:bearer\s+)?(?:sk|AIza)[A-Za-z0-9_-]{16,}\b/iu.test(text) || /\b(?:api[_ -]?key|token|password|contrase(?:ñ|n)a|one[- ]?time code)\s*[:=]\s*\S+/iu.test(text) || /\b[a-f0-9]{32,}\b/iu.test(text)) return '';
+  if (/\b(?:bearer\s+)?(?:sk|AIza)[A-Za-z0-9_-]{16,}\b/iu.test(text) || new RegExp(String.raw`\b(?:api[_ -]?key|token|password|contrase(?:ñ|n)a|one[- ]?time code)${CREDENTIAL_ASSIGNMENT}`, 'iu').test(text) || /\b[a-f0-9]{32,}\b/iu.test(text)) return '';
   return truncate(text, maximum);
 }
 
