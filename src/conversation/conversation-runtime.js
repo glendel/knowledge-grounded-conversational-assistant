@@ -52,7 +52,10 @@ export async function processConversationTurn(runtime, { conversationId, userId,
     }
     session = { turns: memory?.recentTurns.map((turn) => ({ role: turn.role, text: turn.text })) ?? [], memory };
   }
-  const evidence = await retrieveApprovedKnowledge(runtime.retriever, { message: normalized.text });
+  const evidence = await retrieveApprovedKnowledge(runtime.retriever, {
+    message: normalized.text,
+    recentUserMessages: retrievalRelevantUserMessages(session.turns, runtime.descriptor.configuration.conversationRuntime)
+  });
   const context = assembleConversationContext({
     configuration: runtime.descriptor.configuration,
     conversationId,
@@ -161,6 +164,15 @@ function boundSessionTurns(turns, configuration) {
   return turns
     .slice(-(configuration.maxRecentTurns * 2))
     .map((turn) => Object.freeze({ role: turn.role, text: String(turn.text).slice(0, configuration.maxRecentTurnCharacters) }));
+}
+
+function retrievalRelevantUserMessages(turns, configuration) {
+  const maximumMessages = 2;
+  return turns
+    .filter((turn) => turn.role === 'user')
+    .slice(-maximumMessages)
+    .map((turn) => String(turn.text).slice(0, configuration.maxRecentTurnCharacters).trim())
+    .filter(Boolean);
 }
 
 function assertContract(contracts, fileName, value) {

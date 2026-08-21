@@ -18,14 +18,18 @@ export function createApprovedKnowledgeRetriever({ descriptor } = {}) {
   return Object.freeze({ descriptor });
 }
 
-export async function retrieveApprovedKnowledge(retriever, { message } = {}) {
+export async function retrieveApprovedKnowledge(retriever, { message, recentUserMessages = [] } = {}) {
   if (typeof message !== 'string' || message.trim().length === 0) {
     throw new FoundationError('A non-empty message is required for approved knowledge retrieval.', { code: 'RUNTIME_MESSAGE_INVALID' });
+  }
+  if (!Array.isArray(recentUserMessages) || recentUserMessages.some((item) => typeof item !== 'string')) {
+    throw new TypeError('recentUserMessages must be an array of strings.');
   }
   const source = await loadApprovedKnowledge(retriever);
   if (source === null) return Object.freeze({ status: 'no_evidence', knowledgeVersion: null, candidates: Object.freeze([]) });
 
-  const queryTerms = meaningfulTerms(message);
+  const retrievalQuery = [message, ...recentUserMessages].join('\n');
+  const queryTerms = meaningfulTerms(retrievalQuery);
   const candidateIds = candidateDocumentIds(source.lexicalIndex, queryTerms);
   const termWeights = createTermWeights(source.lexicalIndex, queryTerms, source.records.size);
   const scored = candidateIds
@@ -42,7 +46,7 @@ export async function retrieveApprovedKnowledge(retriever, { message } = {}) {
     termWeights,
     retriever.descriptor.configuration.conversationRuntime.maxEvidenceDocuments
   );
-  const candidates = selectEvidence(eligible, message, retriever.descriptor.configuration.conversationRuntime.maxEvidenceCharacters);
+  const candidates = selectEvidence(eligible, retrievalQuery, retriever.descriptor.configuration.conversationRuntime.maxEvidenceCharacters);
   return Object.freeze({
     status: candidates.length > 0 ? 'evidence' : 'no_evidence',
     knowledgeVersion: source.manifest.knowledgeVersion,

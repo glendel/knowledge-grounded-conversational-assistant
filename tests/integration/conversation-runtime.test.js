@@ -208,6 +208,32 @@ test('uses the actual message language and supports natural in-process follow-up
   }
 });
 
+test('retrieves approved evidence from the recent user goal for a vague follow-up', async () => {
+  const { deploymentRoot, descriptor } = await createApprovedDeployment();
+  const requests = [];
+  try {
+    const runtime = createConversationRuntime({
+      descriptor,
+      capabilityRuntime: capability(['Open Settings and select Save.', 'Start in Settings and select Save.'], requests)
+    });
+    await processConversationTurn(runtime, {
+      conversationId: 'conversation-goal-continuity',
+      userId: 'user-goal-continuity',
+      message: 'How do I save settings?'
+    });
+    const followUp = await processConversationTurn(runtime, {
+      conversationId: 'conversation-goal-continuity',
+      userId: 'user-goal-continuity',
+      message: 'I do not know how.'
+    });
+    assert.equal(followUp.status, 'success');
+    assert.equal(followUp.turn.evidenceState, 'evidence');
+    assert.match(requests[1].messages[0].content, /To save settings, open Settings and select Save/);
+  } finally {
+    await rm(deploymentRoot, { recursive: true, force: true });
+  }
+});
+
 test('does not leak active-session conversation across user or conversation boundaries', async () => {
   const { deploymentRoot, descriptor } = await createApprovedDeployment();
   const requests = [];
