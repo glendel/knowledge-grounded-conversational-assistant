@@ -40,12 +40,18 @@ export async function retrieveApprovedKnowledge(retriever, { message, recentUser
     .filter((candidate) => candidate && candidate.score > 0)
     .sort((left, right) => right.score - left.score || left.record.id.localeCompare(right.record.id));
 
-  const eligible = selectDiverseCandidates(
+  const maximumDocuments = retriever.descriptor.configuration.conversationRuntime.maxEvidenceDocuments;
+  const maximumRelated = Math.min(
+    retriever.descriptor.configuration.conversationRuntime.intelligence.maxRelatedEvidenceDocuments,
+    Math.max(0, maximumDocuments - 1)
+  );
+  const direct = selectDiverseCandidates(
     scored,
     queryTerms,
     termWeights,
-    retriever.descriptor.configuration.conversationRuntime.maxEvidenceDocuments
+    Math.max(1, maximumDocuments - maximumRelated)
   );
+  const eligible = fillWithRelatedEvidence({ direct, scored, relationships: source.relationships, records: source.records, queryTerms, termWeights, maximumDocuments, maximumRelated });
   const candidates = selectEvidence(eligible, retrievalQuery, retriever.descriptor.configuration.conversationRuntime.maxEvidenceCharacters);
   return Object.freeze({
     status: candidates.length > 0 ? 'evidence' : 'no_evidence',
@@ -68,16 +74,19 @@ async function loadApprovedKnowledge(retriever) {
 
   let manifest;
   let lexicalIndex;
+  let relationshipMap;
   try {
     manifest = await readStrictJsonFile(path.join(indexDirectory, 'manifest.json'), { maxBytes: 2_000_000 });
     lexicalIndex = await readStrictJsonFile(path.join(indexDirectory, 'lexical-index.json'), { maxBytes: 20_000_000 });
+    relationshipMap = await readStrictJsonFile(path.join(indexDirectory, 'relationship-map.json'), { maxBytes: 20_000_000 });
   } catch (error) {
     if (error.code === 'FILESYSTEM_FILE_INVALID') return null;
     throw error;
   }
   assertContract(contracts, 'knowledge-index.contract.json', manifest);
   assertContract(contracts, 'knowledge-lexical-index.contract.json', lexicalIndex);
-  if (manifest.approvedOnly !== true || manifest.knowledgeVersion !== lexicalIndex.knowledgeVersion) {
+  assertContract(contracts, 'knowledge-relationship-map.contract.json', relationshipMap);
+  if (manifest.approvedOnly !== true || manifest.knowledgeVersion !== lexicalIndex.knowledgeVersion || manifest.knowledgeVersion !== relationshipMap.knowledgeVersion) {
     throw new FoundationError('Approved knowledge indexes are inconsistent.', { code: 'RUNTIME_KNOWLEDGE_INDEX_INVALID' });
   }
 
@@ -95,14 +104,14 @@ async function loadApprovedKnowledge(retriever) {
     }
     records.set(documentId, record);
   }
-  return Object.freeze({ manifest, lexicalIndex, records });
+  return Object.freeze({ manifest, lexicalIndex, relationships: Object.freeze(relationshipMap.relationships), records });
 }
 
 function selectEvidence(candidates, message, maximumCharacters) {
   let remaining = maximumCharacters;
   const selected = [];
   for (const candidate of candidates) {
-    const claims = selectClaims(candidate.record.claims, message, Math.min(remaining, 2400));
+    const claims = selectClaims(candidate.record.claims, message, Math.min(remaining, 2400), true);
     if (claims.length === 0 || claims.length > remaining) continue;
     remaining -= claims.length;
     selected.push(Object.freeze({
@@ -116,7 +125,7 @@ function selectEvidence(candidates, message, maximumCharacters) {
   return selected;
 }
 
-function selectClaims(claims, message, maximumCharacters) {
+function selectClaims(claims, message, maximumCharacters, allowFallbackClaim = false) {
   const terms = new Set(meaningfulTerms(message));
   const ranked = claims
     .map((claim, index) => ({ text: claim.text, index, score: tokenize(claim.text).filter((term) => terms.has(term)).length }))
@@ -125,6 +134,7 @@ function selectClaims(claims, message, maximumCharacters) {
   const selected = [];
   for (const claim of ranked) {
     if (claim.score === 0 && selected.length > 0) break;
+    if (claim.score === 0 && !allowFallbackClaim) break;
     if (claim.text.length > remaining) continue;
     selected.push(claim.text);
     remaining -= claim.text.length + 1;
@@ -132,12 +142,64 @@ function selectClaims(claims, message, maximumCharacters) {
   return selected.join('\n');
 }
 
+function fillWithRelatedEvidence({ direct, scored, relationships, records, queryTerms, termWeights, maximumDocuments, maximumRelated }) {
+  const selected = direct.map((candidate) => ({ ...candidate, related: false }));
+  const selectedIds = new Set(selected.map((candidate) => candidate.record.id));
+  const related = relatedCandidates({ direct, relationships, records, queryTerms, termWeights, selectedIds });
+  for (const candidate of related) {
+    if (selected.length >= maximumDocuments || selected.length >= direct.length + maximumRelated) break;
+    selected.push(candidate);
+    selectedIds.add(candidate.record.id);
+  }
+  for (const candidate of scored) {
+    if (selected.length >= maximumDocuments) break;
+    if (selectedIds.has(candidate.record.id)) continue;
+    selected.push({ ...candidate, related: false });
+    selectedIds.add(candidate.record.id);
+  }
+  return selected;
+}
+
+function relatedCandidates({ direct, relationships, records, queryTerms, termWeights, selectedIds }) {
+  const directIds = new Set(direct.map((candidate) => candidate.record.id));
+  const candidates = new Map();
+  for (const relationship of relationships) {
+    if (!['related_to', 'prerequisite_for', 'clarifies'].includes(relationship.type)) continue;
+    const sourceIsDirect = directIds.has(relationship.fromDocumentId);
+    const targetIsDirect = directIds.has(relationship.targetDocumentId);
+    if (!sourceIsDirect && !targetIsDirect) continue;
+    const documentId = sourceIsDirect ? relationship.targetDocumentId : relationship.fromDocumentId;
+    if (selectedIds.has(documentId)) continue;
+    const record = records.get(documentId);
+    if (!record) continue;
+    const score = relevance(record, queryTerms, termWeights) + relationshipWeight(relationship.type);
+    const existing = candidates.get(documentId);
+    if (!existing || existing.score < score) candidates.set(documentId, { record, score, related: true });
+  }
+  return [...candidates.values()].sort((left, right) => right.score - left.score || left.record.id.localeCompare(right.record.id));
+}
+
+function relationshipWeight(type) {
+  if (type === 'clarifies') return 18;
+  if (type === 'prerequisite_for') return 14;
+  return 10;
+}
+
 function candidateDocumentIds(lexicalIndex, terms) {
   return [...new Set(terms.flatMap((term) => lexicalIndex.terms[term] ?? []))].sort();
 }
 
 function relevance(record, terms, termWeights) {
-  return terms.reduce((score, term) => score + termRelevance(record, term, termWeights), 0);
+  return terms.reduce((score, term) => score + termRelevance(record, term, termWeights), 0) + phraseRelevance(record, terms);
+}
+
+function phraseRelevance(record, terms) {
+  const query = terms.join(' ');
+  const fields = [record.title, ...record.topics, ...record.retrievalTerms];
+  return fields.reduce((score, value) => {
+    const phrase = meaningfulTerms(value).join(' ');
+    return phrase.length > 2 && query.includes(phrase) ? score + (phrase.split(' ').length * 10) : score;
+  }, 0);
 }
 
 function termRelevance(record, term, termWeights) {

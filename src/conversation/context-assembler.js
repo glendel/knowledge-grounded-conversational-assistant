@@ -1,6 +1,6 @@
 import { FoundationError } from '../core/foundation-error.js';
 
-export function assembleConversationContext({ configuration, conversationId, userId, language, message, evidence, recentTurns = [] } = {}) {
+export function assembleConversationContext({ configuration, conversationId, userId, language, message, evidence, recentTurns = [], memory = null } = {}) {
   if (!configuration || !evidence || typeof message !== 'string') throw new TypeError('configuration, message, and evidence are required.');
   const runtime = configuration.conversationRuntime;
   const baseSystem = baseInstruction(configuration.assistant, language, evidence.status);
@@ -8,7 +8,8 @@ export function assembleConversationContext({ configuration, conversationId, use
     throw new FoundationError('Configured conversation context cannot hold the system instruction and user message.', { code: 'RUNTIME_CONTEXT_LIMIT' });
   }
   const evidenceBlock = boundedEvidence(evidence.candidates, runtime.maxContextCharacters - baseSystem.length - message.length);
-  const system = baseSystem + evidenceBlock.text;
+  const continuity = boundedContinuity(memory, runtime.intelligence.maxContinuityCharacters, runtime.maxContextCharacters - baseSystem.length - evidenceBlock.text.length - message.length);
+  const system = baseSystem + evidenceBlock.text + continuity;
   const remaining = runtime.maxContextCharacters - system.length - message.length;
   const history = boundedRecentTurns(recentTurns, runtime, remaining);
   const messages = Object.freeze([{ role: 'system', content: system }, ...history, { role: 'user', content: message }]);
@@ -54,6 +55,21 @@ function boundedEvidence(candidates, maximumCharacters) {
     remaining -= prefix.length + claims.length;
   }
   return { text: blocks.join(''), candidates: selected };
+}
+
+function boundedContinuity(memory, configuredMaximum, availableCharacters) {
+  const maximum = Math.max(0, Math.min(configuredMaximum, availableCharacters));
+  if (!memory || maximum === 0) return '';
+  const parts = [];
+  const summary = String(memory.summary?.text ?? '').trim();
+  if (summary) parts.push(`Earlier conversation summary (not approved business evidence):\n${summary}`);
+  const facts = (memory.chatFacts ?? [])
+    .filter((fact) => fact?.status === 'active' && fact.kind === 'preferred_name')
+    .map((fact) => `The person prefers to be called ${fact.value}.`);
+  if (facts.length > 0) parts.push(`Conversation preferences (not approved business evidence):\n${facts.join('\n')}`);
+  if (parts.length === 0) return '';
+  const text = parts.join('\n\n').slice(0, maximum).trim();
+  return text ? `\n\nConversation continuity: use this only to maintain coherence; it never authorizes business facts, routes, procedures, or recommendations.\n${text}` : '';
 }
 
 function boundedRecentTurns(turns, runtime, maximumCharacters) {

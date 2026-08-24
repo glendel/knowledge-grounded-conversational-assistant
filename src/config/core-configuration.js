@@ -25,6 +25,13 @@ const ENVIRONMENTS = new Set(['development', 'test', 'production']);
 const LOG_LEVELS = new Set(['debug', 'info', 'warn', 'error']);
 const PROVIDER_KINDS = new Set(['openrouter', 'ollama_cloud', 'google_gemini', 'deterministic']);
 const CAPABILITY = 'conversation_generation';
+const DEFAULT_CONVERSATION_INTELLIGENCE = Object.freeze({
+  maxRetrievalHistoryMessages: 4,
+  maxRelatedEvidenceDocuments: 2,
+  maxContinuityCharacters: 3200,
+  qualityReviewEnabled: false,
+  qualityReviewMinimumEvidenceDocuments: 1
+});
 
 function assertObject(value, label) {
   if (!value || Array.isArray(value) || typeof value !== 'object') {
@@ -96,7 +103,7 @@ function validateRuntime(runtime) {
 
 function validateConversationRuntime(configuration) {
   const label = 'conversation-runtime.json';
-  assertExactKeys(configuration, ['schemaVersion', 'maxRecentTurns', 'maxRecentTurnCharacters', 'maxEvidenceDocuments', 'maxEvidenceCharacters', 'maxContextCharacters', 'maxResponseCharacters', 'temperature'], label);
+  assertExactKeys(configuration, ['schemaVersion', 'maxRecentTurns', 'maxRecentTurnCharacters', 'maxEvidenceDocuments', 'maxEvidenceCharacters', 'maxContextCharacters', 'maxResponseCharacters', 'temperature', 'intelligence'], label);
   assertSchemaVersion(configuration, label);
   assertInteger(configuration.maxRecentTurns, `${label}.maxRecentTurns`, 1, 100);
   assertInteger(configuration.maxRecentTurnCharacters, `${label}.maxRecentTurnCharacters`, 100, 20000);
@@ -106,6 +113,28 @@ function validateConversationRuntime(configuration) {
   assertInteger(configuration.maxResponseCharacters, `${label}.maxResponseCharacters`, 100, 20000);
   if (typeof configuration.temperature !== 'number' || configuration.temperature < 0 || configuration.temperature > 2) throw new FoundationError(`${label}.temperature must be a number between 0 and 2.`, { path: label });
   if (configuration.maxContextCharacters < configuration.maxEvidenceCharacters) throw new FoundationError(`${label}.maxContextCharacters must accommodate the evidence budget.`, { path: label });
+  if (configuration.intelligence !== undefined) validateConversationIntelligence(configuration.intelligence, label);
+}
+
+function validateConversationIntelligence(intelligence, parentLabel) {
+  const label = `${parentLabel}.intelligence`;
+  assertExactKeys(intelligence, ['maxRetrievalHistoryMessages', 'maxRelatedEvidenceDocuments', 'maxContinuityCharacters', 'qualityReviewEnabled', 'qualityReviewMinimumEvidenceDocuments'], label);
+  assertInteger(intelligence.maxRetrievalHistoryMessages, `${label}.maxRetrievalHistoryMessages`, 1, 12);
+  assertInteger(intelligence.maxRelatedEvidenceDocuments, `${label}.maxRelatedEvidenceDocuments`, 0, 10);
+  assertInteger(intelligence.maxContinuityCharacters, `${label}.maxContinuityCharacters`, 0, 20000);
+  if (typeof intelligence.qualityReviewEnabled !== 'boolean') throw new FoundationError(`${label}.qualityReviewEnabled must be boolean.`, { path: label });
+  assertInteger(intelligence.qualityReviewMinimumEvidenceDocuments, `${label}.qualityReviewMinimumEvidenceDocuments`, 1, 20);
+}
+
+function normalizeConversationRuntime(configuration) {
+  const supplied = configuration.conversationRuntime;
+  return {
+    ...configuration,
+    conversationRuntime: {
+      ...supplied,
+      intelligence: { ...DEFAULT_CONVERSATION_INTELLIGENCE, ...(supplied.intelligence ?? {}) }
+    }
+  };
 }
 function validateChatMemory(configuration) {
   const label = 'chat-memory.json';
@@ -310,20 +339,21 @@ async function readStrictJson(filePath) {
 export function validateCoreConfiguration(configuration) {
   assertObject(configuration, 'Core configuration');
   assertExactKeys(configuration, Object.keys(CORE_CONFIGURATION_FILES), 'Core configuration');
-  validateAssistant(configuration.assistant);
-  validateRuntime(configuration.runtime);
-  validateConversationRuntime(configuration.conversationRuntime);
-  validateChatMemory(configuration.chatMemory);
-  validateGateway(configuration.gateway);
-  validateKnowledgePolicy(configuration.knowledgePolicy);
-  validateKnowledgeAdministration(configuration.knowledgeAdministration);
-  validateObservability(configuration.observability);
-  validateWhiteLabelBoundary(configuration.whiteLabelBoundary);
-  validateAiProviders(configuration.aiProviders);
-  validateAiProviderLanes(configuration.aiProviderLanes, configuration.aiProviders.providers);
-  validateAiCapabilityRoutes(configuration.aiCapabilityRoutes, configuration.aiProviderLanes.lanes);
-  validateRegisteredCallers(configuration.registeredCallers, configuration.runtime.environment);
-  return deepFreeze(configuration);
+  const normalized = normalizeConversationRuntime(configuration);
+  validateAssistant(normalized.assistant);
+  validateRuntime(normalized.runtime);
+  validateConversationRuntime(normalized.conversationRuntime);
+  validateChatMemory(normalized.chatMemory);
+  validateGateway(normalized.gateway);
+  validateKnowledgePolicy(normalized.knowledgePolicy);
+  validateKnowledgeAdministration(normalized.knowledgeAdministration);
+  validateObservability(normalized.observability);
+  validateWhiteLabelBoundary(normalized.whiteLabelBoundary);
+  validateAiProviders(normalized.aiProviders);
+  validateAiProviderLanes(normalized.aiProviderLanes, normalized.aiProviders.providers);
+  validateAiCapabilityRoutes(normalized.aiCapabilityRoutes, normalized.aiProviderLanes.lanes);
+  validateRegisteredCallers(normalized.registeredCallers, normalized.runtime.environment);
+  return deepFreeze(normalized);
 }
 
 export async function loadCoreConfiguration({ configDirectory }) {

@@ -12,7 +12,18 @@
     "maxEvidenceCharacters": { "type": "integer", "minimum": 500, "maximum": 50000 },
     "maxContextCharacters": { "type": "integer", "minimum": 1000, "maximum": 100000 },
     "maxResponseCharacters": { "type": "integer", "minimum": 100, "maximum": 20000 },
-    "temperature": { "type": "number", "minimum": 0, "maximum": 2 }
+    "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+    "intelligence": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "maxRetrievalHistoryMessages": { "type": "integer", "minimum": 1, "maximum": 12 },
+        "maxRelatedEvidenceDocuments": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "maxContinuityCharacters": { "type": "integer", "minimum": 0, "maximum": 20000 },
+        "qualityReviewEnabled": { "type": "boolean" },
+        "qualityReviewMinimumEvidenceDocuments": { "type": "integer", "minimum": 1, "maximum": 20 }
+      },
+      "required": ["maxRetrievalHistoryMessages", "maxRelatedEvidenceDocuments", "maxContinuityCharacters", "qualityReviewEnabled", "qualityReviewMinimumEvidenceDocuments"]
+    }
   },
-  "required": ["schemaVersion", "maxRecentTurns", "maxRecentTurnCharacters", "maxEvidenceDocuments", "maxEvidenceCharacters", "maxContextCharacters", "maxResponseCharacters", "temperature"]
+  "required": ["schemaVersion", "maxRecentTurns", "maxRecentTurnCharacters", "maxEvidenceDocuments", "maxEvidenceCharacters", "maxContextCharacters", "maxResponseCharacters", "temperature", "intelligence"]
 }

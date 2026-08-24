@@ -6,5 +6,12 @@
   "maxEvidenceCharacters": 8000,
   "maxContextCharacters": 18000,
   "maxResponseCharacters": 3000,
-  "temperature": 0.2
+  "temperature": 0.2,
+  "intelligence": {
+    "maxRetrievalHistoryMessages": 4,
+    "maxRelatedEvidenceDocuments": 2,
+    "maxContinuityCharacters": 3200,
+    "qualityReviewEnabled": false,
+    "qualityReviewMinimumEvidenceDocuments": 1
+  }
 }
