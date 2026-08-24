@@ -127,6 +127,35 @@ test('prioritizes a rare product name over broad category matches', async () => 
   }
 });
 
+test('prefers a focused approved article over a broad coverage-release record', async () => {
+  const { deploymentRoot, descriptor } = await createApprovedDeployment();
+  const requests = [];
+  try {
+    const administration = await createKnowledgeAdministration({ deploymentRoot, configuration: descriptor.configuration, contracts: descriptor.contracts, now: () => '2026-08-17T00:00:00.000Z' });
+    const registry = JSON.parse(await readFile(path.join(deploymentRoot, 'app', 'knowledge', 'registry.json'), 'utf8'));
+    const sourceId = registry.activeSourceIds[0];
+    await createDraft(administration, { sourceId, documentId: 'knowledge_coverage-settings', title: 'Coverage release: settings manual', language: 'en', aiAdministrator: 'synthetic-ai-administrator' });
+    const coveragePath = path.join(deploymentRoot, 'app', 'knowledge', 'drafts', 'knowledge_coverage-settings', 'record.json');
+    const coverage = JSON.parse(await readFile(coveragePath, 'utf8'));
+    coverage.tags = ['development-test', 'source-backed', 'full-coverage'];
+    coverage.topics = ['settings manual'];
+    coverage.retrievalTerms = ['settings', 'save', 'configuration', 'manual'];
+    coverage.claims[0].text = 'A broad source excerpt mentions settings, saving, configuration, and many unrelated subjects.';
+    coverage.review = { ...coverage.review, privacyReviewed: true, freshnessReviewed: true, authorityReviewed: true };
+    await writeFile(coveragePath, JSON.stringify(coverage, null, 2) + '\n', 'utf8');
+    await writeFile(path.join(deploymentRoot, 'app', 'knowledge', 'drafts', 'knowledge_coverage-settings', 'document.md'), '# Coverage release: settings manual\n\nA broad source excerpt mentions settings, saving, configuration, and many unrelated subjects.\n', 'utf8');
+    await approveDraft(administration, { documentId: 'knowledge_coverage-settings', approvedBy: 'human-admin', declaration: 'HUMAN_APPROVAL_CONFIRMED' });
+    await buildIndexes(administration);
+    const refreshed = await createDeploymentDescriptor({ coreRoot: CORE_ROOT, deploymentRoot });
+    const runtime = createConversationRuntime({ descriptor: refreshed, capabilityRuntime: capability(['Open Settings and select Save.'], requests) });
+    await processConversationTurn(runtime, { conversationId: 'conversation-curated-priority', userId: 'user-curated-priority', message: 'How do I save settings?' });
+    const context = requests[0].messages[0].content;
+    assert.ok(context.indexOf('Title: Save settings') < context.indexOf('Title: Coverage release: settings manual'));
+  } finally {
+    await rm(deploymentRoot, { recursive: true, force: true });
+  }
+});
+
 test('retains evidence for a secondary request topic in a mixed conversational turn', async () => {
   const { deploymentRoot, descriptor } = await createApprovedDeployment();
   const requests = [];

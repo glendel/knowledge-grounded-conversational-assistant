@@ -35,7 +35,7 @@ export async function retrieveApprovedKnowledge(retriever, { message, recentUser
   const scored = candidateIds
     .map((documentId) => {
       const record = source.records.get(documentId);
-      return record ? { record, score: relevance(record, queryTerms, termWeights) } : null;
+      return record ? { record, score: relevance(record, queryTerms, termWeights) * retrievalPriority(record) } : null;
     })
     .filter((candidate) => candidate && candidate.score > 0)
     .sort((left, right) => right.score - left.score || left.record.id.localeCompare(right.record.id));
@@ -200,6 +200,13 @@ function phraseRelevance(record, terms) {
     const phrase = meaningfulTerms(value).join(' ');
     return phrase.length > 2 && query.includes(phrase) ? score + (phrase.split(' ').length * 10) : score;
   }, 0);
+}
+
+function retrievalPriority(record) {
+  // Coverage-release documents intentionally keep full source segments available for
+  // development and recall fallback. A focused, curated article is a better primary
+  // conversational source when both cover the same request.
+  return record.tags.includes('full-coverage') ? 0.12 : 1;
 }
 
 function termRelevance(record, term, termWeights) {
