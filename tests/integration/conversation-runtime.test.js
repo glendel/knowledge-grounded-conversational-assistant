@@ -151,7 +151,9 @@ test('prefers a focused approved article over a broad coverage-release record', 
     const runtime = createConversationRuntime({ descriptor: refreshed, capabilityRuntime: capability(['Open Settings and select Save.'], requests) });
     await processConversationTurn(runtime, { conversationId: 'conversation-curated-priority', userId: 'user-curated-priority', message: 'How do I save settings?' });
     const context = requests[0].messages[0].content;
-    assert.ok(context.indexOf('Title: Save settings') < context.indexOf('Title: Coverage release: settings manual'));
+    assert.match(context, /Title: Save settings/);
+    assert.doesNotMatch(context, /Title: Coverage release: settings manual/);
+    assert.doesNotMatch(context, /A broad source excerpt mentions settings/);
   } finally {
     await rm(deploymentRoot, { recursive: true, force: true });
   }

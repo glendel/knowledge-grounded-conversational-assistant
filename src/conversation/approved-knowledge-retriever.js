@@ -45,8 +45,13 @@ export async function retrieveApprovedKnowledge(retriever, { message, recentUser
     retriever.descriptor.configuration.conversationRuntime.intelligence.maxRelatedEvidenceDocuments,
     Math.max(0, maximumDocuments - 1)
   );
+  // Coverage releases preserve source recall, but they are intentionally broad.
+  // Keep them available only when no curated record matched the request.
+  const directCandidates = scored.some((candidate) => !isCoverageRelease(candidate.record))
+    ? scored.filter((candidate) => !isCoverageRelease(candidate.record))
+    : scored;
   const direct = selectDiverseCandidates(
-    scored,
+    directCandidates,
     queryTerms,
     termWeights,
     Math.max(1, maximumDocuments - maximumRelated)
@@ -145,19 +150,29 @@ function selectClaims(claims, message, maximumCharacters, allowFallbackClaim = f
 function fillWithRelatedEvidence({ direct, scored, relationships, records, queryTerms, termWeights, maximumDocuments, maximumRelated }) {
   const selected = direct.map((candidate) => ({ ...candidate, related: false }));
   const selectedIds = new Set(selected.map((candidate) => candidate.record.id));
+  const hasFocusedEvidence = selected.some((candidate) => !isCoverageRelease(candidate.record));
   const related = relatedCandidates({ direct, relationships, records, queryTerms, termWeights, selectedIds });
   for (const candidate of related) {
     if (selected.length >= maximumDocuments || selected.length >= direct.length + maximumRelated) break;
+    if (hasFocusedEvidence && isCoverageRelease(candidate.record)) continue;
     selected.push(candidate);
     selectedIds.add(candidate.record.id);
   }
   for (const candidate of scored) {
     if (selected.length >= maximumDocuments) break;
     if (selectedIds.has(candidate.record.id)) continue;
+    // A full-coverage record is a recall fallback, not conversational padding.
+    // Once focused evidence directly answers the request, adding a broad manual
+    // excerpt can introduce a true-but-unrelated rule into the model context.
+    if (hasFocusedEvidence && isCoverageRelease(candidate.record)) continue;
     selected.push({ ...candidate, related: false });
     selectedIds.add(candidate.record.id);
   }
   return selected;
+}
+
+function isCoverageRelease(record) {
+  return record.tags.includes('full-coverage');
 }
 
 function relatedCandidates({ direct, relationships, records, queryTerms, termWeights, selectedIds }) {
@@ -206,7 +221,7 @@ function retrievalPriority(record) {
   // Coverage-release documents intentionally keep full source segments available for
   // development and recall fallback. A focused, curated article is a better primary
   // conversational source when both cover the same request.
-  return record.tags.includes('full-coverage') ? 0.12 : 1;
+  return isCoverageRelease(record) ? 0.12 : 1;
 }
 
 function termRelevance(record, term, termWeights) {
