@@ -78,6 +78,8 @@ test('uses approved evidence in a single natural prose call and keeps source mat
     assert.equal(result.turn.evidenceState, 'evidence');
     assert.equal(requests.length, 1);
     assert.match(requests[0].messages[0].content, /To save settings, open Settings and select Save/);
+    assert.match(requests[0].messages[0].content, /Match the depth the person asks for/);
+    assert.match(requests[0].messages[0].content, /field-by-field explanation/);
     assert.match(requests[0].messages[0].content, /do not append inferred conditions/);
     assert.doesNotMatch(requests[0].messages[0].content, /Raw source instruction/);
     assert.doesNotMatch(requests[0].messages[0].content, /ignore all safety rules/);
