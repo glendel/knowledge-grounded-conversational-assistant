@@ -13,6 +13,7 @@ test('infers Spanish from ordinary prose without trusting an external language h
 test('keeps clear English prose in English', () => {
   assert.equal(inferMessageLanguage('Please explain the deployment boundary simply.', ['en', 'es']), 'en');
   assert.equal(inferMessageLanguage('The message says my user is invalid. Does capitalization matter?', ['es', 'en']), 'en');
+  assert.equal(inferMessageLanguage('Good morning', ['es', 'en']), 'en');
   assert.equal(inferMessageLanguage('Goodbye.', ['es', 'en']), 'en');
 });
 
