@@ -52,10 +52,12 @@ export async function processConversationTurn(runtime, { conversationId, userId,
     }
     session = { turns: memory?.recentTurns.map((turn) => ({ role: turn.role, text: turn.text })) ?? [], memory };
   }
-  const evidence = await retrieveApprovedKnowledge(runtime.retriever, {
-    message: normalized.text,
-    recentUserMessages: retrievalRelevantUserMessages(session.turns, runtime.descriptor.configuration.conversationRuntime)
-  });
+  const evidence = shouldRetrieveApprovedKnowledge(normalized.text)
+    ? await retrieveApprovedKnowledge(runtime.retriever, {
+      message: normalized.text,
+      recentUserMessages: retrievalRelevantUserMessages(session.turns, runtime.descriptor.configuration.conversationRuntime)
+    })
+    : noEvidence();
   const context = assembleConversationContext({
     configuration: runtime.descriptor.configuration,
     conversationId,
@@ -130,7 +132,15 @@ export async function processConversationTurn(runtime, { conversationId, userId,
     laneId: generated.result.laneId ?? null,
     knowledgeVersion: evidence.knowledgeVersion
   });
-  return Object.freeze({ status: 'success', turn, failure: null, context });
+  return Object.freeze({
+    status: 'success',
+    turn,
+    failure: null,
+    context,
+    sourceEvidence: turn.sourcesAvailable
+      ? Object.freeze(evidence.candidates.map((candidate) => Object.freeze({ title: candidate.title, language: candidate.language, section: null, page: null, excerpt: candidate.claims })))
+      : Object.freeze([])
+  });
 }
 
 function assertConversationCapacity(configuration) {
@@ -180,6 +190,27 @@ function retrievalRelevantUserMessages(turns, configuration) {
     .map((turn) => String(turn.text).slice(0, configuration.maxRecentTurnCharacters).trim())
     .filter(Boolean);
 }
+
+function noEvidence() {
+  return Object.freeze({ status: 'no_evidence', knowledgeVersion: null, candidates: Object.freeze([]) });
+}
+
+function shouldRetrieveApprovedKnowledge(message) {
+  const normalized = String(message)
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLocaleLowerCase('und')
+    .replace(/\s+/gu, ' ')
+    .trim();
+  if (SOCIABILITY_ONLY.test(normalized)) return false;
+  if (MEDIA_CAPABILITY_REQUEST.test(normalized)) return false;
+  return true;
+}
+
+// This only avoids irrelevant evidence retrieval. It never supplies a reply or
+// decides a business outcome; the model remains responsible for the dialogue.
+const SOCIABILITY_ONLY = /^(?:hola|hello|hi|hey|buen(?:os|as) (?:dias|tardes|noches)|good (?:morning|afternoon|evening)|gracias|thanks|thank you|adios|hasta luego|bye|goodbye)[!. ]*$/u;
+const MEDIA_CAPABILITY_REQUEST = /^(?:(?:puedes|podrias|can you|could you) )?(?:mostrar|ver|show|display) (?:me )?(?:una |un |an? )?(?:imagen|foto|picture|image)(?:[, ]+(?:por favor|please))?[?.! ]*$/u;
 
 async function improveDraftWhenEnabled({ runtime, context, evidence, message, draft }) {
   const intelligence = runtime.descriptor.configuration.conversationRuntime.intelligence;

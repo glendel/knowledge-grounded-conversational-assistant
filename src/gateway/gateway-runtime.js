@@ -3,7 +3,6 @@ import { request as httpsRequest } from 'node:https';
 
 import { isLaneQualified } from '../ai/model-qualification.js';
 import { createConversationRuntime, processConversationTurn } from '../conversation/conversation-runtime.js';
-import { retrieveApprovedKnowledge } from '../conversation/approved-knowledge-retriever.js';
 import { loadDeploymentQualificationRecords } from '../deployment/provider-qualification-records.js';
 import { FoundationError } from '../core/foundation-error.js';
 import { assertSafeDeliveryTarget, scopedRuntimeId, signCallbackPayload, validateCallbackUrl } from './gateway-security.js';
@@ -73,8 +72,7 @@ async function runJob(runtime, job) {
   try {
     const result = await processConversationTurn(runtime.conversation, { conversationId, userId, message: request.message.text });
     if (result.status === 'success') {
-      const evidence = await retrieveApprovedKnowledge(runtime.conversation.retriever, { message: request.message.text });
-      const sourceEvidence = evidence.candidates.map((item) => ({ title: item.title, language: item.language, section: null, page: null, excerpt: item.claims }));
+      const sourceEvidence = result.sourceEvidence ?? [];
       await completeGatewayJob(runtime.store, { job, turn: result.turn, sourceEvidence, caller });
       runtime.observe({ eventType: 'gateway.job.completed', correlationId: job.id, sourceCount: sourceEvidence.length });
       return;

@@ -211,6 +211,27 @@ test('continues ordinary conversation naturally when no approved index exists ye
   }
 });
 
+test('does not retrieve or advertise sources for an ordinary greeting or a media capability request', async () => {
+  const { deploymentRoot, descriptor } = await createApprovedDeployment();
+  const requests = [];
+  try {
+    const runtime = createConversationRuntime({
+      descriptor,
+      capabilityRuntime: capability(['Hello. How can I help?', 'I cannot display images here, but I can guide you through a documented process.'], requests)
+    });
+    const greeting = await processConversationTurn(runtime, { conversationId: 'conversation-social', userId: 'user-social', message: 'Good morning' });
+    const image = await processConversationTurn(runtime, { conversationId: 'conversation-social', userId: 'user-social', message: 'Can you show me an image, please?' });
+    assert.equal(greeting.turn.evidenceState, 'no_evidence');
+    assert.equal(greeting.turn.sourcesAvailable, false);
+    assert.equal(image.turn.evidenceState, 'no_evidence');
+    assert.equal(image.turn.sourcesAvailable, false);
+    assert.doesNotMatch(requests[0].messages[0].content, /To save settings/);
+    assert.doesNotMatch(requests[1].messages[0].content, /To save settings/);
+  } finally {
+    await rm(deploymentRoot, { recursive: true, force: true });
+  }
+});
+
 test('uses the actual message language and supports natural in-process follow-ups without a dialogue tree', async () => {
   const { deploymentRoot, descriptor } = await createApprovedDeployment();
   const requests = [];
@@ -260,6 +281,24 @@ test('retrieves approved evidence from the recent user goal for a vague follow-u
     assert.equal(followUp.status, 'success');
     assert.equal(followUp.turn.evidenceState, 'evidence');
     assert.match(requests[1].messages[0].content, /To save settings, open Settings and select Save/);
+  } finally {
+    await rm(deploymentRoot, { recursive: true, force: true });
+  }
+});
+
+test('instructs the model to resolve an ordinary reference from the active conversation goal', async () => {
+  const { deploymentRoot, descriptor } = await createApprovedDeployment();
+  const requests = [];
+  try {
+    const runtime = createConversationRuntime({
+      descriptor,
+      capabilityRuntime: capability(['The Settings form has a Save button.', 'Enter the setting and select Save.'], requests)
+    });
+    await processConversationTurn(runtime, { conversationId: 'conversation-reference', userId: 'user-reference', message: 'Explain the Settings form.' });
+    await processConversationTurn(runtime, { conversationId: 'conversation-reference', userId: 'user-reference', message: 'What should I enter in this form?' });
+    assert.match(requests[1].messages[0].content, /Treat recent turns as the active conversational goal/);
+    assert.match(requests[1].messages[0].content, /Active user goal \(conversation context only, not approved business evidence\):\nExplain the Settings form\./);
+    assert.ok(requests[1].messages.some((entry) => entry.content.includes('Explain the Settings form.')));
   } finally {
     await rm(deploymentRoot, { recursive: true, force: true });
   }
