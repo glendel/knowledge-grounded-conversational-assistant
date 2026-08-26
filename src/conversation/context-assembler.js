@@ -29,7 +29,7 @@ export function assembleConversationContext({ configuration, conversationId, use
 function baseInstruction(assistant, language, evidenceState) {
   const languageName = language === 'es' ? 'Spanish' : language === 'en' ? 'English' : language;
   const evidenceInstruction = evidenceState === 'evidence'
-    ? 'Use deployment-specific facts only from the approved evidence below. State only what the evidence explicitly supports: do not add examples, roles, mechanisms, consequences, names, or implementation details that are not present. If the evidence does not answer any part of the request, say so naturally instead of filling that gap.'
+    ? 'Use deployment-specific facts only from the approved evidence below. State only what the evidence explicitly supports: do not add examples, roles, mechanisms, consequences, names, implementation details, prerequisites, warnings, or best-practice advice that are not present. When the evidence gives a procedure, explain only its supported steps; do not append inferred conditions. If the evidence does not answer any part of the request, say so naturally instead of filling that gap.'
     : 'No approved evidence was retrieved for this message. You may converse naturally about your configured identity and ordinary social language, but do not invent deployment-specific facts, steps, causes, or recommendations. State the limit naturally and ask one useful clarifying question when it could help.';
   return 'You are ' + assistant.displayName + '. ' + assistant.identity
     + '\nScope: ' + assistant.scope
