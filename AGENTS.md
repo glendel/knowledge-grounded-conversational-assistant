@@ -20,7 +20,7 @@ Build assistants that have natural, fluent, useful, evidence-grounded conversati
 
 Core-owned content includes generic source code, provider adapters, contracts, schemas, validators, templates, tests, and generic documentation.
 
-Deployment-owned content includes identity, purpose, actual configuration, approved knowledge, raw sources, provider routes, evaluation cases, policies, callers, secrets, durable operational state, transcripts, and logs. It may live in a separate external deployment root or in ignored local `app/`, `config/`, `.env`, and `tmp/` paths of a self-hosted clone. Durable data belongs in `app/`; `tmp/` is always disposable. It must never be tracked by this repository.
+Deployment-owned content includes identity, purpose, actual configuration, approved knowledge, raw sources, human-facing documentation drafts and published guides, provider routes, evaluation cases, policies, callers, secrets, durable operational state, transcripts, and logs. It may live in a separate external deployment root or in ignored local `app/`, `config/`, `.env`, and `tmp/` paths of a self-hosted clone. Durable data belongs in `app/`; `tmp/` is always disposable. It must never be tracked by this repository.
 
 ## Required checks
 
@@ -33,6 +33,7 @@ Run `npm run check` before staging changes. It runs the current boundary, custom
 - Never copy Git history from a deployment repository.
 - Use synthetic, neutral fixtures only.
 - Do not add a feature merely because one deployment needs it; first determine whether configuration, policy, or deployment knowledge solves it. Change Core source only for reusable capability improvements.
+- A conversation finding, user correction, or AI-authored documentation draft is never factual runtime knowledge by itself. It must pass responsible human validation and the ordinary source-to-approved-Knowledge-Base lifecycle.
 - Keep deployment-root selection explicit and validated once the runtime is introduced. Equal Core/deployment roots are valid only for the explicit self-hosted mode; nested roots remain forbidden.
 - Stop and correct the change if a boundary check fails or any deployment information appears in Core-tracked files.
 

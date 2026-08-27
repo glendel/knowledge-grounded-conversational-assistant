@@ -34,8 +34,9 @@ The Core contains no tracked active provider lane, model choice, credential, cal
 1. Choose either an external deployment root or a self-hosted clone.
 2. For a self-hosted clone, run `node ./bin/initialize-self-hosted-deployment.js --deployment-root <absolute-clone-root>`.
 3. Supply the assistant identity, purpose, approved knowledge, policies, provider choices, Golden Datasets, and secret references in deployment-owned material.
-4. Validate that deployment against the Core contracts and acceptance gates.
-5. Promote an improvement to Core only when it is genuinely generic, sanitized, tested, and useful across deployments.
+4. Use the [Human Documentation Improvement Loop](docs/architecture/human-documentation-improvement-loop.md) to turn reviewed conversation findings into stronger human documentation and, after a separate governed promotion, a stronger Knowledge Base.
+5. Validate that deployment against the Core contracts and acceptance gates.
+6. Promote an improvement to Core only when it is genuinely generic, sanitized, tested, and useful across deployments.
 
 To remove expired local chat-memory snapshots explicitly, run:
 
